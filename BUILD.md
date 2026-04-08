@@ -33,6 +33,27 @@ cargo xtask run
 
 This runs the backend on `http://127.0.0.1:8001` with development features enabled.
 
+### 2a. External Auth With New API
+
+If you want llumen login and registration to use a separate New API deployment, configure that on the backend only:
+
+```bash
+export NEWAPI_AUTH_BASE="https://newapi.example.com"
+```
+
+Optional settings:
+
+```bash
+export NEWAPI_AUTH_BEARER="optional-service-token"
+export NEWAPI_AUTH_USER_HEADER="New-Api-User"
+```
+
+Important:
+
+- The browser still calls only llumen at `/api/...`
+- llumen backend calls New API server-to-server
+- This avoids direct browser-to-New-API CORS requirements
+
 ### 3. Build and Run Together
 
 ```bash
@@ -84,6 +105,8 @@ cargo xtask gen-ts
 ```
 
 Generates TypeScript types from Rust structs using typeshare.
+
+If `cargo xtask gen-ts` fails with a typeshare parsing error, fix the Rust types first. In the current codebase, `typeshare` may reject enums in `backend/protocol/src/lib.rs` that are not tagged for export.
 
 ### Generate SeaORM Entities
 

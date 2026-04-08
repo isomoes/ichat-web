@@ -30,6 +30,13 @@ pub async fn route(
     Extension(UserId(_)): Extension<UserId>,
     Json(_): Json<UserListReq>,
 ) -> JsonResult<UserListResp> {
+    if app.newapi_auth.is_some() {
+        return Err(Json(Error {
+            error: ErrorKind::MalformedRequest,
+            reason: "User listing is managed by the external auth provider".to_owned(),
+        }));
+    }
+
     let models = user::Entity::find()
         .all(&app.conn)
         .await

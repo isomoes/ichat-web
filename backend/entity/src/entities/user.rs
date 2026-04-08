@@ -10,6 +10,7 @@ pub struct Model {
     pub name: String,
     pub password: String,
     pub preference: protocol::UserPreference,
+    pub external_user_id: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

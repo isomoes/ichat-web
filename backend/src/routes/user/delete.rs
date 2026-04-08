@@ -25,6 +25,13 @@ pub async fn route(
     Extension(UserId(user_id)): Extension<UserId>,
     Json(req): Json<UserDeleteReq>,
 ) -> JsonResult<UserDeleteResp> {
+    if app.newapi_auth.is_some() {
+        return Err(Json(Error {
+            error: ErrorKind::MalformedRequest,
+            reason: "User deletion is managed by the external auth provider".to_owned(),
+        }));
+    }
+
     if user_id == req.user_id {
         return Err(Json(Error {
             error: ErrorKind::ResourceNotFound,

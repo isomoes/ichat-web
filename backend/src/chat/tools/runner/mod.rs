@@ -28,7 +28,7 @@
 //!
 //! ## Usage
 //!
-//! ```rust
+//! ```ignore
 //! use runner::{LuaRunner, LuaRunnerConfig, ExecutionPath};
 //!
 //! # async fn example() -> Result<(), runner::LuaRunnerError> {

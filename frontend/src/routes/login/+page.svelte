@@ -65,7 +65,7 @@
 				</Input>
 			</div>
 			<div>
-				<Input type="password" placeholder="P@88w0rd" id="password" bind:value={password!} required>
+				<Input type="password" placeholder="P@88w0rd" id="password" bind:value={password} required>
 					{$_('login.password')}
 				</Input>
 			</div>
@@ -80,5 +80,9 @@
 				{/if}
 			</Button>
 		</form>
+		<p class="mt-4 text-center text-sm">
+			Need an account?
+			<a href="/register" class="underline">Register</a>
+		</p>
 	</div>
 </main>

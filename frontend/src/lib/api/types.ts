@@ -258,6 +258,19 @@ export interface LoginResp {
 	exp: string;
 }
 
+export interface RegisterReq {
+	username: string;
+	password: string;
+	email?: string;
+	verification_code?: string;
+	aff_code?: string;
+}
+
+export interface RegisterResp {
+	token: string;
+	exp: string;
+}
+
 export interface MessageCreateReqFile {
 	id: number;
 	name: string;
@@ -497,6 +510,7 @@ export interface UserReadResp {
 	user_id: number;
 	username: string;
 	preference: UserPreference;
+	external_auth: boolean;
 }
 
 export interface UserUpdateReq {

@@ -21,6 +21,9 @@ Llumen uses environment variables for configuration. No config files needed!
 | `DATA_PATH` | Storage directory | `.` (current dir) |
 | `BIND_ADDR` | Network socket | `0.0.0.0:80` |
 | `TRUSTED_HEADER` | middleware auth | None |
+| `NEWAPI_AUTH_BASE` | Base URL for New API user auth | None |
+| `NEWAPI_AUTH_BEARER` | Optional service token for upstream auth calls | None |
+| `NEWAPI_AUTH_USER_HEADER` | Upstream user header name when needed | `New-Api-User` |
 
 ## Docker Configuration
 
@@ -81,6 +84,28 @@ Any OpenAI-compatible API works:
 export API_KEY="your-key"
 export API_BASE="https://your-endpoint.com/v1"
 ```
+
+### External User Auth With New API
+
+To delegate login and registration to a separate New API deployment while keeping llumen conversation history local:
+
+```bash
+export NEWAPI_AUTH_BASE="https://newapi.example.com"
+```
+
+Optional upstream settings:
+
+```bash
+export NEWAPI_AUTH_BEARER="optional-service-token"
+export NEWAPI_AUTH_USER_HEADER="New-Api-User"
+```
+
+Behavior:
+
+- Your browser still talks only to llumen
+- llumen backend calls New API server-to-server
+- Conversation history, preferences, and file ownership stay in llumen's local database
+- Different users cannot see each other's local history because llumen still scopes chats by local owner id
 
 ## Storage Configuration
 
@@ -218,11 +243,10 @@ docker run -d \
 
 ## Security Best Practices
 
-<Accordion title="Change default password">
-  1. Log in with `admin` / `P@88w0rd`
-  2. Go to Settings -> Security
-  3. Change password immediately
-  4. Use a strong, unique password
+<Accordion title="External account management">
+  - If `NEWAPI_AUTH_BASE` is configured, user login and registration are delegated to your New API instance.
+  - Llumen stores only local conversation history, preferences, and file ownership.
+  - Password resets and account recovery happen in your New API deployment.
 </Accordion>
 
 <Accordion title="Protect API keys">

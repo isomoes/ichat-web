@@ -22,6 +22,7 @@ pub struct UserReadResp {
     pub user_id: i32,
     pub username: String,
     pub preference: UserPreference,
+    pub external_auth: bool,
 }
 
 pub async fn route(
@@ -42,5 +43,6 @@ pub async fn route(
         user_id: res.id,
         username: res.name,
         preference: res.preference,
+        external_auth: app.newapi_auth.is_some(),
     }))
 }

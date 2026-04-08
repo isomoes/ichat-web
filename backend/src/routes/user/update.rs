@@ -43,6 +43,13 @@ pub async fn route(
         "no field to update"
     );
 
+    if app.newapi_auth.is_some() && password.is_some() {
+        return Err(Json(Error {
+            error: ErrorKind::MalformedRequest,
+            reason: "Password changes are managed by the external auth provider".to_owned(),
+        }));
+    }
+
     let txn = app.conn.begin().await.kind(ErrorKind::Internal)?;
 
     let res = User::find_by_id(user_id)

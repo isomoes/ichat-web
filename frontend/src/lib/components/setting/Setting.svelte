@@ -2,6 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import { Star, X } from '@lucide/svelte';
 	import { CircleUser, EthernetPort, LogOut, ShieldUser } from '@lucide/svelte';
+	import { getCurrentUser } from '$lib/api/user.svelte';
 	import { token } from '$lib/store';
 	import { Dialog, Tabs } from 'bits-ui';
 	import SettingBtn from './SettingBtn.svelte';
@@ -14,6 +15,8 @@
 	let { open = $bindable() } = $props();
 	let value = $state('account');
 	let id: undefined | number = $state(undefined);
+	const currentUser = $derived(getCurrentUser());
+	const showAdmin = $derived(!currentUser?.external_auth);
 </script>
 
 <Dialog.Root>
@@ -49,16 +52,18 @@
 								{$_('setting.account_settings')}
 							</span>
 						</Tabs.Trigger>
-						<Tabs.Trigger
-							value="admin"
-							class="cursor-pointer rounded px-3 py-2 text-left duration-150 hover:bg-primary hover:text-text-hover
-					data-[state=active]:bg-primary 	data-[state=active]:text-text-hover"
-						>
-							<ShieldUser class="inline-block h-5 w-5 md:mr-2" />
-							<span class="hidden md:inline-block">
-								{$_('setting.admin_settings')}
-							</span>
-						</Tabs.Trigger>
+						{#if showAdmin}
+							<Tabs.Trigger
+								value="admin"
+								class="cursor-pointer rounded px-3 py-2 text-left duration-150 hover:bg-primary hover:text-text-hover
+						data-[state=active]:bg-primary 	data-[state=active]:text-text-hover"
+							>
+								<ShieldUser class="inline-block h-5 w-5 md:mr-2" />
+								<span class="hidden md:inline-block">
+									{$_('setting.admin_settings')}
+								</span>
+							</Tabs.Trigger>
+						{/if}
 						<Tabs.Trigger
 							value="openrouter"
 							class="cursor-pointer rounded px-3 py-2 text-left duration-150 hover:bg-primary hover:text-text-hover
@@ -95,12 +100,14 @@
 						</Dialog.Title>
 						<Account />
 					</Tabs.Content>
-					<Tabs.Content value="admin">
-						<Dialog.Title class="pb-6 text-center text-xl">
-							{$_('setting.admin_settings')}
-						</Dialog.Title>
-						<Admin />
-					</Tabs.Content>
+					{#if showAdmin}
+						<Tabs.Content value="admin">
+							<Dialog.Title class="pb-6 text-center text-xl">
+								{$_('setting.admin_settings')}
+							</Dialog.Title>
+							<Admin />
+						</Tabs.Content>
+					{/if}
 					<Tabs.Content value="openrouter" class="flex h-full flex-col">
 						<Dialog.Title class="pb-6 text-center text-xl">Openrouter</Dialog.Title>
 						<Openrouter bind:id bind:value />

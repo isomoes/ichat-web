@@ -7,6 +7,7 @@ pub enum User {
     Name,
     Password,
     Preference,
+    ExternalUserId,
 }
 
 #[derive(DeriveIden)]

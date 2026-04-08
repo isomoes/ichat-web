@@ -27,6 +27,23 @@ pub async fn route(
     State(app): State<Arc<AppState>>,
     Json(req): Json<LoginReq>,
 ) -> JsonResult<LoginResp> {
+    if let Some(newapi_auth) = &app.newapi_auth {
+        let identity = newapi_auth
+            .login(&req.username, &req.password)
+            .await
+            .map_err(|error| {
+                Json(Error {
+                    error: ErrorKind::LoginFail,
+                    reason: error.to_string(),
+                })
+            })?;
+
+        let user = helper::upsert_external_user(&app, identity).await?;
+        let helper::Token { token, exp } = helper::new_token(&app, user.id)?;
+
+        return Ok(Json(LoginResp { token, exp }));
+    }
+
     let model = User::find()
         .filter(user::Column::Name.eq(req.username))
         .one(&app.conn)
