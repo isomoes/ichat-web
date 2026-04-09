@@ -16,7 +16,12 @@ pub async fn execute(ctx: &Context, session: &mut CompletionSession) -> Result<(
 
     let mut stream: openrouter::StreamCompletion = ctx
         .openrouter
-        .stream(model, messages, openrouter::CompletionOption::default())
+        .stream_with_api_key(
+            session.api_key(),
+            model,
+            messages,
+            openrouter::CompletionOption::default(),
+        )
         .await?;
 
     let halt = session

@@ -18,6 +18,7 @@ pub struct DeepAgentInput {
     pub user_message: String,
     pub locale: String,
     pub model: openrouter::Model,
+    pub api_key: Option<String>,
 }
 
 /// Deep research agent that orchestrates multiple agents for comprehensive
@@ -51,6 +52,7 @@ impl DeepAgent {
                 .unwrap_or("en-US")
                 .to_string(),
             model,
+            api_key: completion_ctx.api_key().map(str::to_owned),
         };
 
         let mut agent = DeepAgent {
@@ -104,7 +106,12 @@ impl DeepAgent {
             let mut stream: openrouter::StreamCompletion = self
                 .ctx
                 .openrouter
-                .stream(model, messages, openrouter::CompletionOption::default())
+                .stream_with_api_key(
+                    self.input.api_key.as_deref(),
+                    model,
+                    messages,
+                    openrouter::CompletionOption::default(),
+                )
                 .await?;
 
             let mut text = String::new();
@@ -147,7 +154,12 @@ impl DeepAgent {
         let result = self
             .ctx
             .openrouter
-            .structured::<PlannerResponse>(messages, model, openrouter::CompletionOption::default())
+            .structured_with_api_key::<PlannerResponse>(
+                self.input.api_key.as_deref(),
+                messages,
+                model,
+                openrouter::CompletionOption::default(),
+            )
             .await?;
 
         // TODO: since we decide to remove streaming plan, we should also remove support
@@ -239,7 +251,12 @@ impl DeepAgent {
             let stream: openrouter::StreamCompletion = self
                 .ctx
                 .openrouter
-                .stream(model, messages.clone(), option)
+                .stream_with_api_key(
+                    self.input.api_key.as_deref(),
+                    model,
+                    messages.clone(),
+                    option,
+                )
                 .await?;
 
             let mut ordered_stream = StreamWithOrderedTokens::new(stream);
@@ -341,8 +358,11 @@ impl DeepAgent {
         let option = openrouter::CompletionOption::builder()
             .reasoning_effort(ReasoningEffort::Auto)
             .build();
-        let stream: openrouter::StreamCompletion =
-            self.ctx.openrouter.stream(model, messages, option).await?;
+        let stream: openrouter::StreamCompletion = self
+            .ctx
+            .openrouter
+            .stream_with_api_key(self.input.api_key.as_deref(), model, messages, option)
+            .await?;
 
         let mut ordered_stream = StreamWithOrderedTokens::new(stream);
 

@@ -11,6 +11,7 @@ pub struct Model {
     pub password: String,
     pub preference: protocol::UserPreference,
     pub external_user_id: Option<String>,
+    pub newapi_api_key: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -35,8 +35,8 @@ pub async fn route(
         }));
     };
 
-    let identity = newapi_auth
-        .register(
+    let authenticated = newapi_auth
+        .register_with_session(
             &req.username,
             &req.password,
             req.email.as_deref(),
@@ -51,7 +51,19 @@ pub async fn route(
             })
         })?;
 
-    let user = helper::upsert_external_user(&app, identity).await?;
+    let api_key = Some(
+        newapi_auth
+            .ensure_user_api_key(&authenticated)
+            .await
+            .map_err(|error| {
+                Json(Error {
+                    error: ErrorKind::MalformedRequest,
+                    reason: error.to_string(),
+                })
+            })?,
+    );
+
+    let user = helper::upsert_external_user(&app, authenticated.identity, api_key).await?;
     let helper::Token { token, exp } = helper::new_token(&app, user.id)?;
 
     Ok(Json(RegisterResp { token, exp }))

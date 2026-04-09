@@ -23,6 +23,10 @@ pub struct Openrouter {
 }
 
 impl Openrouter {
+    fn resolve_api_key<'a>(&'a self, api_key: Option<&'a str>) -> &'a str {
+        api_key.unwrap_or(&self.api_key)
+    }
+
     async fn create_request(
         &self,
         mut messages: Vec<Message>,
@@ -206,6 +210,17 @@ impl Openrouter {
         messages: Vec<Message>,
         option: CompletionOption,
     ) -> Result<StreamCompletion, Error> {
+        self.stream_with_api_key(None, model, messages, option)
+            .await
+    }
+
+    pub async fn stream_with_api_key(
+        &self,
+        api_key: Option<&str>,
+        model: Model,
+        messages: Vec<Message>,
+        option: CompletionOption,
+    ) -> Result<StreamCompletion, Error> {
         #[cfg(debug_assertions)]
         check_message(&messages);
 
@@ -217,7 +232,7 @@ impl Openrouter {
 
         StreamCompletion::request(
             &self.http_client,
-            &self.api_key,
+            self.resolve_api_key(api_key),
             &self.chat_completion_endpoint,
             req,
         )
@@ -226,13 +241,14 @@ impl Openrouter {
 
     async fn send_complete_request(
         &self,
+        api_key: Option<&str>,
         req: raw::CompletionReq,
     ) -> Result<ChatCompletion, Error> {
         let (content_length, body) = Self::completion_body(req);
         let mut req_builder = self
             .http_client
             .post(&self.chat_completion_endpoint)
-            .bearer_auth(&self.api_key)
+            .bearer_auth(self.resolve_api_key(api_key))
             .header("HTTP-Referer", HTTP_REFERER)
             .header("X-Title", X_TITLE)
             .header(CONTENT_TYPE, "application/json");
@@ -285,6 +301,17 @@ impl Openrouter {
         &self,
         messages: Vec<Message>,
         model: Model,
+        option: CompletionOption,
+    ) -> Result<ChatCompletion, Error> {
+        self.complete_with_api_key(None, messages, model, option)
+            .await
+    }
+
+    pub async fn complete_with_api_key(
+        &self,
+        api_key: Option<&str>,
+        messages: Vec<Message>,
+        model: Model,
         mut option: CompletionOption,
     ) -> Result<ChatCompletion, Error> {
         debug_assert!(
@@ -306,11 +333,25 @@ impl Openrouter {
         option.image_generation = false;
 
         let req = self.create_request(messages, false, model, option).await?;
-        self.send_complete_request(req).await
+        self.send_complete_request(api_key, req).await
     }
 
     pub async fn structured<T>(
         &self,
+        messages: Vec<Message>,
+        model: Model,
+        option: CompletionOption,
+    ) -> Result<StructuredCompletion<T>, Error>
+    where
+        T: serde::de::DeserializeOwned + schemars::JsonSchema,
+    {
+        self.structured_with_api_key(None, messages, model, option)
+            .await
+    }
+
+    pub async fn structured_with_api_key<T>(
+        &self,
+        api_key: Option<&str>,
         messages: Vec<Message>,
         model: Model,
         option: CompletionOption,
@@ -345,7 +386,7 @@ impl Openrouter {
             });
         }
 
-        let completion = self.send_complete_request(req).await?;
+        let completion = self.send_complete_request(api_key, req).await?;
         let result: T = serde_json::from_str(&completion.response).map_err(Error::Serde)?;
         Ok(StructuredCompletion {
             price: completion.price,
@@ -392,6 +433,19 @@ impl Openrouter {
             price: 0.0,
             response,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn prefers_override_api_key_when_present() {
+        let openrouter = Openrouter::new("global-key", "https://openrouter.ai/api", false);
+
+        assert_eq!(openrouter.resolve_api_key(Some("user-key")), "user-key");
+        assert_eq!(openrouter.resolve_api_key(None), "global-key");
     }
 }
 

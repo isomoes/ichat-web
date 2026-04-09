@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use axum::{Json, extract::State};
 use entity::{prelude::*, user};
-use sea_orm::prelude::*;
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
@@ -28,8 +28,8 @@ pub async fn route(
     Json(req): Json<LoginReq>,
 ) -> JsonResult<LoginResp> {
     if let Some(newapi_auth) = &app.newapi_auth {
-        let identity = newapi_auth
-            .login(&req.username, &req.password)
+        let authenticated = newapi_auth
+            .login_with_session(&req.username, &req.password)
             .await
             .map_err(|error| {
                 Json(Error {
@@ -38,7 +38,31 @@ pub async fn route(
                 })
             })?;
 
-        let user = helper::upsert_external_user(&app, identity).await?;
+        let existing_key = User::find()
+            .filter(
+                user::Column::ExternalUserId.eq(authenticated.identity.external_user_id.clone()),
+            )
+            .one(&app.conn)
+            .await
+            .kind(ErrorKind::Internal)?
+            .and_then(|user| user.newapi_api_key);
+
+        let api_key = match existing_key {
+            Some(api_key) => Some(api_key),
+            None => Some(
+                newapi_auth
+                    .ensure_user_api_key(&authenticated)
+                    .await
+                    .map_err(|error| {
+                        Json(Error {
+                            error: ErrorKind::LoginFail,
+                            reason: error.to_string(),
+                        })
+                    })?,
+            ),
+        };
+
+        let user = helper::upsert_external_user(&app, authenticated.identity, api_key).await?;
         let helper::Token { token, exp } = helper::new_token(&app, user.id)?;
 
         return Ok(Json(LoginResp { token, exp }));

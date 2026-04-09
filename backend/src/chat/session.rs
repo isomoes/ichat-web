@@ -28,6 +28,7 @@ pub struct SessionModel {
 pub struct SessionUser {
     pub id: i32,
     pub preference: UserPreference,
+    pub newapi_api_key: Option<String>,
 }
 
 /// A single completion run.  Holds mutable message state, a reference
@@ -115,6 +116,7 @@ impl CompletionSession {
             user: SessionUser {
                 id: user_id,
                 preference: user.preference,
+                newapi_api_key: user.newapi_api_key,
             },
             model: SessionModel {
                 id: model_id,
@@ -210,6 +212,10 @@ impl CompletionSession {
             MessageInner::User { text, .. } => Some(text.as_str()),
             _ => None,
         })
+    }
+
+    pub fn api_key(&self) -> Option<&str> {
+        self.user.newapi_api_key.as_deref()
     }
 
     /// Builds an `openrouter::Model` from the stored config.
@@ -474,7 +480,7 @@ impl CompletionSession {
         let result = self
             .ctx
             .openrouter
-            .complete(messages, model, option)
+            .complete_with_api_key(self.api_key(), messages, model, option)
             .await
             .ok()?;
         let title = result.response.trim().to_string();

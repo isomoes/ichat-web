@@ -23,7 +23,7 @@ pub async fn execute(ctx: &Context, session: &mut CompletionSession) -> Result<(
         let model = session.openrouter_model();
         let stream: openrouter::StreamCompletion = ctx
             .openrouter
-            .stream(model, messages.clone(), option.clone())
+            .stream_with_api_key(session.api_key(), model, messages.clone(), option.clone())
             .await?;
 
         // Wrap with ordered tokens wrapper to filter out tool tokens during streaming

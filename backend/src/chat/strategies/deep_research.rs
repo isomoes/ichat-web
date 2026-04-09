@@ -21,8 +21,10 @@ pub async fn execute(ctx: Arc<Context>, session: &mut CompletionSession) -> Resu
     let option = openrouter::CompletionOption::tools(&[deep_tool]);
 
     // Stream the coordinator's response
-    let stream: openrouter::StreamCompletion =
-        ctx.openrouter.stream(model, messages, option).await?;
+    let stream: openrouter::StreamCompletion = ctx
+        .openrouter
+        .stream_with_api_key(session.api_key(), model, messages, option)
+        .await?;
 
     // Wrap with ordered tokens wrapper to filter out tool tokens during streaming
     let mut ordered_stream = StreamWithOrderedTokens::new(stream);
