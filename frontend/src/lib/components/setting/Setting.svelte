@@ -3,7 +3,7 @@
 	import { Star, X } from '@lucide/svelte';
 	import { CircleUser, EthernetPort, LogOut, ShieldUser } from '@lucide/svelte';
 	import { getCurrentUser } from '$lib/api/user.svelte';
-	import { token } from '$lib/store';
+	import { logout } from '$lib/api/auth';
 	import { Dialog, Tabs } from 'bits-ui';
 	import SettingBtn from './SettingBtn.svelte';
 	import Account from './tabs/Account.svelte';
@@ -84,9 +84,7 @@
 						</a>
 						<button
 							class="cursor-pointer rounded px-3 py-2 text-left duration-150 hover:bg-primary hover:text-text-hover"
-							onclick={() => {
-								token.set(undefined);
-							}}
+							onclick={() => logout()}
 						>
 							<LogOut class="inline-block h-5 w-5 md:mr-2" />
 							<span class="hidden md:inline-block"> {$_('setting.logout')} </span>

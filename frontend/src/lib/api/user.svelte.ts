@@ -59,6 +59,11 @@ export function setCurrentUser(data: UserReadResp | undefined) {
 	currentUser = data;
 }
 
+export function resetUserState() {
+	users = undefined;
+	currentUser = undefined;
+}
+
 // Mutations
 export function createUser(): MutationResult<UserCreateReq, UserCreateResp> {
 	return createMutation({

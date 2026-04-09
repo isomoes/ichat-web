@@ -3,7 +3,7 @@
 	import { getCurrentUser } from '$lib/api/user.svelte';
 	import CheckPwd from '../../CheckPwd.svelte';
 	import { updateUser } from '$lib/api/user.svelte';
-	import { token } from '$lib/store';
+	import { logout } from '$lib/api/auth';
 	import Warning from '../../Warning.svelte';
 
 	let { mutate, isError } = updateUser();
@@ -22,7 +22,7 @@
 		message={$_('setting.account.enter_new_password')}
 		onsubmit={(password) => {
 			mutate({ password }, () => {
-				token.set(undefined);
+				logout();
 			});
 		}}
 	></CheckPwd>

@@ -3,6 +3,9 @@ import { page } from '$app/state';
 import { goto } from '$app/navigation';
 import { createMutation, type MutationResult } from './state';
 import { APIFetch } from './state/errorHandle';
+import { resetChatroomState } from './chatroom.svelte';
+import { resetMessageState } from './message.svelte';
+import { resetUserState } from './user.svelte';
 
 import type {
 	HeaderAuthResp,
@@ -15,11 +18,23 @@ import type {
 } from './types';
 import { onDestroy } from 'svelte';
 
+let loggingOut = false;
+
 export interface User {
 	username: string;
 }
 
+function resetSessionState() {
+	resetChatroomState();
+	resetMessageState();
+	resetUserState();
+}
+
 function storeAuthToken(data: LoginResp | RegisterResp) {
+	if (!localStorage.getItem('token')) {
+		resetSessionState();
+	}
+
 	const now = new Date();
 	const expireAt = new Date(data.exp);
 	const renewAt = new Date(now.getTime() + (expireAt.getTime() - now.getTime()) / 2);
@@ -33,6 +48,13 @@ function storeAuthToken(data: LoginResp | RegisterResp) {
 
 function isPublicPath(pathname: string) {
 	return pathname === '/' || pathname.startsWith('/login') || pathname.startsWith('/register');
+}
+
+export async function logout() {
+	loggingOut = true;
+	resetSessionState();
+	token.set(undefined);
+	await goto('/login');
 }
 
 export function Login(): MutationResult<LoginReq, LoginResp> {
@@ -67,7 +89,7 @@ export async function TryHeaderAuth() {
 
 export function initAuth() {
 	const unsubscribers = [
-		token.subscribe((token) => {
+			token.subscribe((token) => {
 			const pathname = page.url.pathname;
 			if (pathname.startsWith('/markdown')) return;
 			if (token) {
@@ -81,7 +103,19 @@ export function initAuth() {
 						goto('/chat/new');
 					}
 				}
-			} else if (!isPublicPath(pathname)) {
+			} else {
+				resetSessionState();
+
+				if (loggingOut) {
+					loggingOut = false;
+					goto('/login');
+					return;
+				}
+
+				if (isPublicPath(pathname)) {
+					return;
+				}
+
 				if (pathname.startsWith('/chat') && pathname != '/chat/new')
 					goto(`/login?callback=${encodeURIComponent(pathname)}`);
 				else goto('/login');

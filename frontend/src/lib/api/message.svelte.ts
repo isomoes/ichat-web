@@ -71,6 +71,13 @@ let deepState = $state<{
 	fullJson: string;
 } | null>(null);
 
+export function resetMessageState() {
+	messages = [];
+	version = -1;
+	cursor = null;
+	deepState = null;
+}
+
 const Handlers: {
 	[key in SseResp['t']]: (data: Extract<SseResp, { t: key }>['c'], chatId: number) => void;
 } = {
@@ -419,9 +426,7 @@ export function useSSEEffect(chatId: () => number) {
 
 		return () => {
 			globalThis.document.removeEventListener('visibilitychange', onVisibilityChange);
-			messages = [];
-			version = -1;
-			cursor = { index: -1, offset: 0 };
+			resetMessageState();
 			controller.abort();
 		};
 	});

@@ -93,6 +93,12 @@ export function setCurrentRoom(data: ChatReadResp | undefined) {
 	currentRoom = data;
 }
 
+export function resetChatroomState() {
+	roomPages = [];
+	currentRoom = undefined;
+	currentRoomId = undefined;
+}
+
 // Mutations
 export function createRoom(): RawMutationResult<CreateRoomRequest, ChatCreateResp> {
 	return createRawMutation({
