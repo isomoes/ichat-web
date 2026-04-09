@@ -1,6 +1,7 @@
 use protocol::OcrEngine;
 
 use super::{error::Error, raw};
+use crate::config::UPSTREAM_ATTACHMENT_MAX_BYTES;
 use crate::utils::blob::BlobReader;
 
 use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
@@ -15,15 +16,21 @@ pub struct File {
 fn file_to_parts(
     file: File,
     capability: &super::Capability,
-) -> impl Iterator<Item = raw::MessagePart> + '_ {
-    raw::MessagePart::from_file(file)
+) -> Result<impl Iterator<Item = raw::MessagePart> + '_, Error> {
+    if file.data.len() > UPSTREAM_ATTACHMENT_MAX_BYTES {
+        return Err(Error::Incompatible(
+            "Attachment exceeds upstream size limit (20 MiB)",
+        ));
+    }
+
+    Ok(raw::MessagePart::from_file(file)
         .into_iter()
         .filter(move |part| match part.r#type {
             raw::MultiPartMessageType::ImageUrl => capability.image_input,
             raw::MultiPartMessageType::InputAudio => capability.audio,
             raw::MultiPartMessageType::File => capability.ocr != OcrEngine::Disabled,
             raw::MultiPartMessageType::Text => true,
-        })
+        }))
 }
 
 /// Generated Image that haven't been stored
@@ -90,7 +97,7 @@ impl Message {
         self,
         target_model_id: &str,
         capability: &super::Capability,
-    ) -> raw::Message {
+    ) -> Result<raw::Message, Error> {
         match self {
             Message::Assistant {
                 content,
@@ -109,7 +116,7 @@ impl Message {
                     }
                 }
                 if files.is_empty() {
-                    return raw::Message {
+                    return Ok(raw::Message {
                         role: raw::Role::Assistant,
                         content: Some(content),
                         annotations,
@@ -117,53 +124,53 @@ impl Message {
                             .map(|v| vec![v])
                             .unwrap_or_default(),
                         ..Default::default()
-                    };
+                    });
                 }
                 let mut parts = Vec::new();
 
                 for file in files {
-                    parts.extend(file_to_parts(file, capability));
+                    parts.extend(file_to_parts(file, capability)?);
                 }
 
                 parts.push(raw::MessagePart::text(content));
 
-                raw::Message {
+                Ok(raw::Message {
                     role: raw::Role::Assistant,
                     contents: Some(parts),
                     annotations,
                     reasoning_details: reasoning_details_value.map(|v| vec![v]).unwrap_or_default(),
                     ..Default::default()
-                }
+                })
             }
-            Message::System(msg) => raw::Message {
+            Message::System(msg) => Ok(raw::Message {
                 role: raw::Role::System,
                 content: Some(msg),
                 ..Default::default()
-            },
-            Message::User(msg) => raw::Message {
+            }),
+            Message::User(msg) => Ok(raw::Message {
                 role: raw::Role::User,
                 content: Some(msg),
                 ..Default::default()
-            },
+            }),
 
             Message::MultipartUser { text, files } => {
                 let mut parts = vec![raw::MessagePart::text(text)];
 
                 for file in files {
-                    parts.extend(file_to_parts(file, capability));
+                    parts.extend(file_to_parts(file, capability)?);
                 }
 
-                raw::Message {
+                Ok(raw::Message {
                     role: raw::Role::User,
                     contents: Some(parts),
                     ..Default::default()
-                }
+                })
             }
             Message::ToolCall(MessageToolCall {
                 id,
                 name,
                 arguments,
-            }) => raw::Message {
+            }) => Ok(raw::Message {
                 role: raw::Role::Assistant,
                 tool_calls: Some(vec![raw::ToolCallReq {
                     id,
@@ -175,14 +182,75 @@ impl Message {
                 }]),
                 content: Some("".to_string()),
                 ..Default::default()
-            },
-            Message::ToolResult(MessageToolResult { id, content }) => raw::Message {
+            }),
+            Message::ToolResult(MessageToolResult { id, content }) => Ok(raw::Message {
                 role: raw::Role::Tool,
                 content: Some(content),
                 tool_call_id: Some(id),
                 ..Default::default()
-            },
+            }),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::utils::blob::BlobDB;
+    use std::sync::Arc;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn temp_blob_path(name: &str) -> std::path::PathBuf {
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("clock should be after epoch")
+            .as_nanos();
+        std::env::temp_dir().join(format!("ichat-web-{name}-{}-{nanos}.redb", std::process::id()))
+    }
+
+    async fn make_blob_reader(size: usize) -> BlobReader {
+        let path = temp_blob_path("attachment-limit");
+        let blob = BlobDB::new(Arc::new(redb::Database::create(&path).expect("db should create")));
+        let bytes = bytes::Bytes::from(vec![b'a'; size]);
+        blob.insert(1, size, tokio_stream::iter(vec![bytes]))
+            .await
+            .expect("blob should insert");
+        let reader = blob.get(1).expect("blob should exist");
+        std::fs::remove_file(path).expect("temp db should be removed");
+        reader.into()
+    }
+
+    #[tokio::test]
+    async fn rejects_attachment_that_exceeds_upstream_limit() {
+        let capability = super::super::Capability {
+            text_output: true,
+            image_output: false,
+            image_input: true,
+            structured_output: false,
+            toolcall: false,
+            ocr: OcrEngine::Native,
+            audio: true,
+            reasoning: false,
+            reasoning_effort: Default::default(),
+        };
+
+        let message = Message::MultipartUser {
+            text: "check this file".to_string(),
+            files: vec![File {
+                name: "big.pdf".to_string(),
+                data: make_blob_reader(UPSTREAM_ATTACHMENT_MAX_BYTES + 1).await,
+            }],
+        };
+
+        let error = match message.to_raw_message("test-model", &capability) {
+            Ok(_) => panic!("oversized attachment should be rejected"),
+            Err(error) => error,
+        };
+
+        assert!(matches!(
+            error,
+            Error::Incompatible("Attachment exceeds upstream size limit (20 MiB)")
+        ));
     }
 }
 

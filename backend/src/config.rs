@@ -11,5 +11,7 @@ pub const DB_BUSY_TIMEOUT_MS: u32 = 1000;
 // Cache duration for compressed images: 259200 seconds = 3 days
 pub const IMAGE_CACHE_MAX_AGE_SECS: u32 = 259200;
 
+pub const UPSTREAM_ATTACHMENT_MAX_BYTES: usize = 20 * 1024 * 1024;
+
 // Token expiration time: 7 days in seconds
 pub const TOKEN_EXPIRATION_SECS: u64 = 60 * 60 * 24 * 7;

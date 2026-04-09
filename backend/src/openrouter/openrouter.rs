@@ -29,7 +29,7 @@ impl Openrouter {
         stream: bool,
         model: Model,
         option: CompletionOption,
-    ) -> raw::CompletionReq {
+    ) -> Result<raw::CompletionReq, Error> {
         // https://openrouter.ai/docs/api-reference/overview#assistant-prefill
         if matches!(messages.last(), Some(Message::Assistant { .. })) {
             messages.push(Message::User("".to_string()));
@@ -100,12 +100,12 @@ impl Openrouter {
 
         let tools: Vec<raw::Tool> = option.tools.into_iter().map(|t| t.into()).collect();
 
-        raw::CompletionReq {
+        Ok(raw::CompletionReq {
             model: model.id.clone(),
             messages: messages
                 .into_iter()
                 .map(|m| m.to_raw_message(&model.id, &capability))
-                .collect(),
+                .collect::<Result<Vec<_>, _>>()?,
             stream,
             temperature,
             repeat_penalty: model.repeat_penalty,
@@ -119,7 +119,7 @@ impl Openrouter {
             reasoning,
             modalities,
             response_format: None,
-        }
+        })
     }
 
     fn completion_body(req: raw::CompletionReq) -> (Option<usize>, reqwest::Body) {
@@ -213,7 +213,7 @@ impl Openrouter {
             self.model_cache.ensure_model(&model.id).await?;
         }
 
-        let req = self.create_request(messages, true, model, option).await;
+        let req = self.create_request(messages, true, model, option).await?;
 
         StreamCompletion::request(
             &self.http_client,
@@ -305,7 +305,7 @@ impl Openrouter {
 
         option.image_generation = false;
 
-        let req = self.create_request(messages, false, model, option).await;
+        let req = self.create_request(messages, false, model, option).await?;
         self.send_complete_request(req).await
     }
 
@@ -329,7 +329,7 @@ impl Openrouter {
 
         let structured_output = self.get_capability(&model).await.structured_output;
 
-        let mut req = self.create_request(messages, false, model, option).await;
+        let mut req = self.create_request(messages, false, model, option).await?;
 
         if structured_output {
             let schema = schemars::schema_for!(T);
