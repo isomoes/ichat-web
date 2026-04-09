@@ -3,7 +3,7 @@ SHELL := /bin/sh
 FRONTEND_DIR := frontend
 BACKEND_DIR := backend
 
-.PHONY: help install build-frontend dev dev-build build fresh refresh \
+.PHONY: help install build-frontend dev dev-stop dev-build build fresh refresh \
 	gen-ts gen-entity gen-license test test-backend test-backend-release \
 	test-frontend check-frontend lint-frontend fmt fmt-backend fmt-frontend
 
@@ -12,6 +12,7 @@ help:
 		'ichat build targets:' \
 		'  make install              Install frontend dependencies' \
 		'  make dev                  Run backend and frontend dev servers' \
+		'  make dev-stop             Stop backend and frontend dev servers' \
 		'  make dev-build            Build frontend, then run backend' \
 		'  make build-frontend       Build frontend only' \
 		'  make build                Build full application' \
@@ -31,10 +32,26 @@ build-frontend:
 
 dev:
 	@set -eu; \
-	pnpm --dir $(FRONTEND_DIR) dev & \
+	setsid pnpm --dir $(FRONTEND_DIR) dev & \
 	frontend_pid=$$!; \
-	trap 'kill "'"'$$frontend_pid'"'" 2>/dev/null || true' INT TERM EXIT; \
+	trap 'kill -TERM -$$frontend_pid 2>/dev/null || true' INT TERM EXIT; \
 	cd $(BACKEND_DIR) && cargo xtask run
+
+dev-stop:
+	@set -eu; \
+	kill_pattern() { \
+		pattern="$$1"; \
+		for pid in $$(pgrep -f "$$pattern" 2>/dev/null || true); do \
+			if [ "$$pid" -ne "$$$$" ] && [ "$$pid" -ne "$$PPID" ]; then \
+				kill -TERM "$$pid" 2>/dev/null || true; \
+			fi; \
+		done; \
+	}; \
+	kill_pattern '/usr/bin/pnpm --dir $(FRONTEND_DIR) dev'; \
+	kill_pattern '/vite/bin/vite.js dev'; \
+	kill_pattern '@esbuild/linux-x64/bin/esbuild --service='; \
+	kill_pattern 'target/debug/backend'; \
+	kill_pattern 'cargo run --features dev'
 
 dev-build:
 	cd $(BACKEND_DIR) && cargo xtask run-with-build
