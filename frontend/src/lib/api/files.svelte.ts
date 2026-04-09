@@ -2,6 +2,7 @@ import { RawAPIFetch, APIFetch } from './state/errorHandle';
 import type { FileUploadResp, FileRefreshReq, FileRefreshResp } from './types';
 import { dispatchError } from '$lib/error';
 import { untrack } from 'svelte';
+import { prepareUploadFile } from './pdf-upload';
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // backend limit body size at 128 MB, body size!=file size
 
@@ -24,6 +25,17 @@ export async function upload(file: File, signal?: AbortSignal): Promise<number |
 
 	const data = (await response.json()) as FileUploadResp;
 	return data.id;
+}
+
+async function uploadPrepared(file: File, signal?: AbortSignal): Promise<number | null> {
+	try {
+		const preparedFile = await prepareUploadFile(file, undefined);
+		return await upload(preparedFile, signal);
+	} catch (error) {
+		const reason = error instanceof Error ? error.message : 'unknown PDF extraction error';
+		dispatchError('pdf_extract_failed', `Failed to extract text from ${file.name}: ${reason}`);
+		return await upload(file, signal);
+	}
 }
 
 export async function refresh(fileIds: number[]): Promise<number | null> {
@@ -81,7 +93,7 @@ export async function uploadFiles(
 	const results: { name: string; id: number }[] = [];
 
 	for (const file of files) {
-		const id = await upload(file, signal);
+		const id = await uploadPrepared(file, signal);
 		if (id !== null) {
 			results.push({ name: file.name, id });
 		}
@@ -149,7 +161,7 @@ export function createUploadEffect(
 
 			if (!newUploads.has(key)) {
 				newUploads.set(key, {
-					promise: upload(file, abortController.signal),
+					promise: uploadPrepared(file, abortController.signal),
 					file
 				});
 			}
