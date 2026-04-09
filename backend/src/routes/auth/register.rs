@@ -1,6 +1,11 @@
 use std::sync::Arc;
 
-use axum::{Json, extract::State};
+use axum::{
+    Json,
+    extract::State,
+    http::{HeaderMap, header},
+    response::IntoResponse,
+};
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
@@ -27,7 +32,7 @@ pub struct RegisterResp {
 pub async fn route(
     State(app): State<Arc<AppState>>,
     Json(req): Json<RegisterReq>,
-) -> JsonResult<RegisterResp> {
+) -> Result<impl IntoResponse, Json<Error>> {
     let Some(newapi_auth) = &app.newapi_auth else {
         return Err(Json(Error {
             error: ErrorKind::MalformedRequest,
@@ -63,8 +68,18 @@ pub async fn route(
             })?,
     );
 
+    let session_cookie = authenticated.session_cookie.clone();
     let user = helper::upsert_external_user(&app, authenticated.identity, api_key).await?;
     let helper::Token { token, exp } = helper::new_token(&app, user.id)?;
 
-    Ok(Json(RegisterResp { token, exp }))
+    let mut headers = HeaderMap::new();
+    if let Some(session_cookie) = session_cookie {
+        headers.insert(
+            header::SET_COOKIE,
+            crate::utils::newapi_auth::build_browser_session_set_cookie(&session_cookie)
+                .kind(ErrorKind::Internal)?,
+        );
+    }
+
+    Ok((headers, Json(RegisterResp { token, exp })))
 }

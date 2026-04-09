@@ -4,16 +4,6 @@
   # ichat
 
   [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://www.mozilla.org/en-US/MPL/2.0/)
-  [![Nightly Docker](https://github.com/isomoes/ichat-web/actions/workflows/docker-nightly.yml/badge.svg)](https://github.com/isomoes/ichat-web/actions/workflows/docker-nightly.yml)
-  [![status check](https://github.com/isomoes/ichat-web/actions/workflows/check.yml/badge.svg)](https://github.com/isomoes/ichat-web/actions/workflows/check.yml)
-  ![MSRV](https://img.shields.io/static/v1?label=MSRV&message=1.89&color=orange&logo=rust)
-</div>
-
-<div align="center">
-  
-  [![en](https://img.shields.io/badge/lang-en-green)](./README.md)
-  [![zh-tw](https://img.shields.io/badge/lang-zh--TW-green)](./README_zh-TW.md)
-  [![zh-cn](https://img.shields.io/badge/lang-zh--CN-green)](./README_zh-CN.md)
 </div>
 
 ---
@@ -37,7 +27,8 @@ ichat carves out a different space: **privacy without the complexity**. You get 
 | Speed | Sub-second cold starts, real-time token streaming |
 | Chat Modes | Normal, Web Search, & Deep Research with autonomous agents |
 | Rich Media | PDF uploads, LaTeX rendering, image generation |
-| Universal API | Any OpenAI-compatible provider (OpenRouter, local models, etc.) |
+| Universal API | Any OpenAI-compatible provider (OpenRouter, local models, NewAPI-backed setups, etc.) |
+| NewAPI Integration | Optional backend-side NewAPI auth, per-user model lists, and account-linked API key reuse |
 | Minimal Footprint | ~17MB binary, <128MB RAM usage |
 
 [![Video preview](https://isomoes.github.io/ichat-web/img/theme/ichat.webp)](https://github.com/user-attachments/assets/4d46e649-bd33-4850-af2b-59527cc11618)
@@ -70,6 +61,20 @@ Download from [Releases](https://github.com/isomoes/ichat-web/releases) for Wind
 
 See [BUILD.md](./BUILD.md) for detailed build instructions.
 
+## NewAPI Integration
+
+ichat can integrate with a separate NewAPI deployment for login, registration, and per-user model access while keeping the browser pointed at ichat only.
+
+Configure the backend with:
+
+```bash
+export NEWAPI_AUTH_BASE="https://newapi.example.com"
+export NEWAPI_AUTH_BEARER="optional-service-token"
+export NEWAPI_AUTH_USER_HEADER="New-Api-User"
+```
+
+This lets ichat proxy the auth flow server-to-server and reuse each user's NewAPI credentials and model list without exposing the NewAPI backend directly to the browser.
+
 ## Configuration (Optional)
 
 | Variable | Description | Default |
@@ -78,10 +83,19 @@ See [BUILD.md](./BUILD.md) for detailed build instructions.
 | `API_BASE` | Custom endpoint | `https://openrouter.ai/api` |
 | `DATA_PATH` | Storage directory | `.` |
 | `BIND_ADDR` | Network Socket | `0.0.0.0:80` |
+| `NEWAPI_AUTH_BASE` | Optional NewAPI auth server base URL | unset |
+| `NEWAPI_AUTH_BEARER` | Optional bearer token for NewAPI auth requests | unset |
+| `NEWAPI_AUTH_USER_HEADER` | Optional header name used to forward the NewAPI user identity | `New-Api-User` |
 
 ## Documentation
 
 https://isomoes.github.io/ichat-web/
+
+## Acknowledgement
+
+ichat builds on the earlier `llumen` project by pinkfuwa:
+
+https://github.com/pinkfuwa/llumen
 
 <div align="center">
   Built with :heart: by pinkfuwa. Keep it simple, keep it fast.

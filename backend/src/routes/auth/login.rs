@@ -1,6 +1,11 @@
 use std::sync::Arc;
 
-use axum::{Json, extract::State};
+use axum::{
+    Json,
+    extract::State,
+    http::{HeaderMap, header},
+    response::IntoResponse,
+};
 use entity::{prelude::*, user};
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 use serde::{Deserialize, Serialize};
@@ -26,7 +31,7 @@ pub struct LoginResp {
 pub async fn route(
     State(app): State<Arc<AppState>>,
     Json(req): Json<LoginReq>,
-) -> JsonResult<LoginResp> {
+) -> Result<impl IntoResponse, Json<Error>> {
     if let Some(newapi_auth) = &app.newapi_auth {
         let authenticated = newapi_auth
             .login_with_session(&req.username, &req.password)
@@ -62,10 +67,20 @@ pub async fn route(
             ),
         };
 
+        let session_cookie = authenticated.session_cookie.clone();
         let user = helper::upsert_external_user(&app, authenticated.identity, api_key).await?;
         let helper::Token { token, exp } = helper::new_token(&app, user.id)?;
 
-        return Ok(Json(LoginResp { token, exp }));
+        let mut headers = HeaderMap::new();
+        if let Some(session_cookie) = session_cookie {
+            headers.insert(
+                header::SET_COOKIE,
+                crate::utils::newapi_auth::build_browser_session_set_cookie(&session_cookie)
+                    .kind(ErrorKind::Internal)?,
+            );
+        }
+
+        return Ok((headers, Json(LoginResp { token, exp })));
     }
 
     let model = User::find()
@@ -85,5 +100,5 @@ pub async fn route(
 
     let helper::Token { token, exp } = helper::new_token(&app, model.id)?;
 
-    Ok(Json(LoginResp { token, exp }))
+    Ok((HeaderMap::new(), Json(LoginResp { token, exp })))
 }

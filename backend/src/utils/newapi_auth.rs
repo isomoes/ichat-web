@@ -1,6 +1,7 @@
 use anyhow::Context as _;
+use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
 use dotenv::var;
-use reqwest::Client;
+use reqwest::{Client, Method};
 use serde_json::{Value, json};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -8,6 +9,7 @@ const SELF_ID_FIELDS: &[&str] = &["id", "user_id"];
 const SELF_USERNAME_FIELDS: &[&str] = &["username", "name", "email"];
 const TOKEN_FIELDS: &[&str] = &["token", "access_token", "key"];
 const REASON_FIELDS: &[&str] = &["message", "msg", "reason", "error"];
+pub const BROWSER_SESSION_COOKIE_NAME: &str = "ichat_newapi_session";
 
 #[derive(Debug, Clone)]
 pub struct ExternalIdentity {
@@ -18,6 +20,7 @@ pub struct ExternalIdentity {
 #[derive(Clone)]
 pub struct AuthenticatedExternalUser {
     pub identity: ExternalIdentity,
+    pub session_cookie: Option<String>,
     session: Client,
 }
 
@@ -65,10 +68,16 @@ impl NewApiAuthClient {
                 }),
             )
             .await?;
+        let session_cookie = auth.session_cookie.clone();
 
         let identity = self.fetch_self(&session, auth).await?;
 
-        Ok(AuthenticatedExternalUser { identity, session }.identity)
+        Ok(AuthenticatedExternalUser {
+            identity,
+            session_cookie,
+            session,
+        }
+        .identity)
     }
 
     pub async fn register(
@@ -93,10 +102,16 @@ impl NewApiAuthClient {
                 }),
             )
             .await?;
+        let session_cookie = auth.session_cookie.clone();
 
         let identity = self.fetch_self(&session, auth).await?;
 
-        Ok(AuthenticatedExternalUser { identity, session }.identity)
+        Ok(AuthenticatedExternalUser {
+            identity,
+            session_cookie,
+            session,
+        }
+        .identity)
     }
 
     pub async fn login_with_session(
@@ -115,10 +130,15 @@ impl NewApiAuthClient {
                 }),
             )
             .await?;
+        let session_cookie = auth.session_cookie.clone();
 
         let identity = self.fetch_self(&session, auth).await?;
 
-        Ok(AuthenticatedExternalUser { identity, session })
+        Ok(AuthenticatedExternalUser {
+            identity,
+            session_cookie,
+            session,
+        })
     }
 
     pub async fn register_with_session(
@@ -143,10 +163,78 @@ impl NewApiAuthClient {
                 }),
             )
             .await?;
+        let session_cookie = auth.session_cookie.clone();
 
         let identity = self.fetch_self(&session, auth).await?;
 
-        Ok(AuthenticatedExternalUser { identity, session })
+        Ok(AuthenticatedExternalUser {
+            identity,
+            session_cookie,
+            session,
+        })
+    }
+
+    pub async fn get_with_session_cookie(
+        &self,
+        path: &str,
+        external_user_id: &str,
+        session_cookie: &str,
+    ) -> anyhow::Result<Value> {
+        self.send_session_request(Method::GET, path, external_user_id, session_cookie, None)
+            .await
+    }
+
+    pub async fn post_with_session_cookie(
+        &self,
+        path: &str,
+        external_user_id: &str,
+        session_cookie: &str,
+        body: Value,
+    ) -> anyhow::Result<Value> {
+        self.send_session_request(
+            Method::POST,
+            path,
+            external_user_id,
+            session_cookie,
+            Some(body),
+        )
+        .await
+    }
+
+    pub async fn post_form_with_session_cookie(
+        &self,
+        path: &str,
+        external_user_id: &str,
+        session_cookie: &str,
+        form: &[(&str, String)],
+    ) -> anyhow::Result<Value> {
+        let response = self
+            .http
+            .post(format!(
+                "{}/{}",
+                self.base_url,
+                path.trim_start_matches('/')
+            ))
+            .header(reqwest::header::COOKIE, session_cookie)
+            .header(&self.user_header, external_user_id)
+            .header(reqwest::header::ACCEPT, "application/json, text/plain, */*")
+            .form(form)
+            .send()
+            .await
+            .with_context(|| format!("failed to call New API POST {}", path))?;
+        let status = response.status();
+        let value = response
+            .json::<Value>()
+            .await
+            .with_context(|| format!("failed to decode New API POST {} response", path))?;
+
+        if !status.is_success() {
+            anyhow::bail!(extract_reason_value(&value).unwrap_or_else(|| {
+                format!("New API POST {} failed with status {}", path, status)
+            }));
+        }
+
+        Ok(value)
     }
 
     pub async fn ensure_user_api_key(
@@ -233,6 +321,7 @@ impl NewApiAuthClient {
             .iter()
             .next()
             .is_some();
+        let session_cookie = extract_session_cookie(response.headers());
         let status = response.status();
         let response_text = response.text().await.unwrap_or_default();
 
@@ -250,6 +339,7 @@ impl NewApiAuthClient {
         Ok(UpstreamAuth {
             bearer_token,
             external_user_id,
+            session_cookie,
             has_session_cookie,
         })
     }
@@ -267,6 +357,10 @@ impl NewApiAuthClient {
 
         if let Some(external_user_id) = &auth.external_user_id {
             request = request.header(&self.user_header, external_user_id);
+        }
+
+        if let Some(session_cookie) = &auth.session_cookie {
+            request = request.header(reqwest::header::COOKIE, session_cookie);
         }
 
         if let Some(bearer_token) = &auth.bearer_token {
@@ -436,6 +530,48 @@ impl NewApiAuthClient {
         headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
         Ok(headers)
     }
+
+    async fn send_session_request(
+        &self,
+        method: Method,
+        path: &str,
+        external_user_id: &str,
+        session_cookie: &str,
+        body: Option<Value>,
+    ) -> anyhow::Result<Value> {
+        let mut request = self
+            .http
+            .request(
+                method.clone(),
+                format!("{}/{}", self.base_url, path.trim_start_matches('/')),
+            )
+            .header(reqwest::header::COOKIE, session_cookie)
+            .header(&self.user_header, external_user_id)
+            .header(reqwest::header::ACCEPT, "application/json, text/plain, */*");
+
+        if let Some(body) = body {
+            request = request.json(&body);
+        }
+
+        let response = request
+            .send()
+            .await
+            .with_context(|| format!("failed to call New API {} {}", method, path))?;
+        let status = response.status();
+        let value = response
+            .json::<Value>()
+            .await
+            .with_context(|| format!("failed to decode New API {} {} response", method, path))?;
+
+        if !status.is_success() {
+            anyhow::bail!(extract_reason_value(&value).unwrap_or_else(|| format!(
+                "New API {} {} failed with status {}",
+                method, path, status
+            )));
+        }
+
+        Ok(value)
+    }
 }
 
 fn random_token_name() -> String {
@@ -450,8 +586,51 @@ fn random_token_name() -> String {
 struct UpstreamAuth {
     bearer_token: Option<String>,
     external_user_id: Option<String>,
+    session_cookie: Option<String>,
     #[allow(dead_code)]
     has_session_cookie: bool,
+}
+
+fn extract_session_cookie(headers: &reqwest::header::HeaderMap) -> Option<String> {
+    let cookies: Vec<String> = headers
+        .get_all(reqwest::header::SET_COOKIE)
+        .iter()
+        .filter_map(|header_value| header_value.to_str().ok())
+        .filter_map(|cookie| cookie.split(';').next())
+        .map(str::trim)
+        .filter(|cookie| !cookie.is_empty())
+        .map(ToOwned::to_owned)
+        .collect();
+
+    if cookies.is_empty() {
+        None
+    } else {
+        Some(cookies.join("; "))
+    }
+}
+
+pub fn build_browser_session_set_cookie(
+    session_cookie: &str,
+) -> anyhow::Result<axum::http::HeaderValue> {
+    let encoded_value = URL_SAFE_NO_PAD.encode(session_cookie);
+    let cookie_value =
+        format!("{BROWSER_SESSION_COOKIE_NAME}={encoded_value}; Path=/; SameSite=Lax; HttpOnly");
+
+    axum::http::HeaderValue::from_str(&cookie_value)
+        .context("failed to build browser session cookie header")
+}
+
+pub fn extract_browser_session_cookie(headers: &axum::http::HeaderMap) -> Option<String> {
+    let cookie_header = headers.get(axum::http::header::COOKIE)?.to_str().ok()?;
+
+    let encoded_value = cookie_header.split(';').find_map(|cookie| {
+        let trimmed_cookie = cookie.trim();
+        let (name, value) = trimmed_cookie.split_once('=')?;
+        (name == BROWSER_SESSION_COOKIE_NAME).then_some(value)
+    })?;
+
+    let decoded_bytes = URL_SAFE_NO_PAD.decode(encoded_value).ok()?;
+    String::from_utf8(decoded_bytes).ok()
 }
 
 fn extract_bearer_token(text: &str) -> Option<String> {
@@ -519,4 +698,21 @@ mod tests {
         assert_eq!(extract_external_user_id(body).as_deref(), Some("1"));
     }
 
+    #[test]
+    fn extracts_cookie_header_from_set_cookie_headers() {
+        let mut headers = reqwest::header::HeaderMap::new();
+        headers.append(
+            reqwest::header::SET_COOKIE,
+            reqwest::header::HeaderValue::from_static("session=abc; Path=/; HttpOnly"),
+        );
+        headers.append(
+            reqwest::header::SET_COOKIE,
+            reqwest::header::HeaderValue::from_static("remember=xyz; Path=/"),
+        );
+
+        assert_eq!(
+            extract_session_cookie(&headers).as_deref(),
+            Some("session=abc; remember=xyz")
+        );
+    }
 }

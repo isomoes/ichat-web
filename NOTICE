@@ -1,4 +1,4 @@
-Copyright (c) Eason0729, KAIYOHUGO, isomoes and ichat contributers
+Copyright (c) Eason0729, KAIYOHUGO, isomoes and ichat contributors
 
 This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,3 +8,8 @@ This project is licensed under the Mozilla Public License 2.0 (MPL-2.0).
 
 This project is initially developed by
 Eason0729(https://github.com/Eason0729/) and KAIYOHUGO(https://github.com/KAIYOHUGO/).
+
+ichat is derived from and acknowledges the earlier llumen project:
+https://github.com/pinkfuwa/llumen
+
+This repository also includes ongoing ichat-specific work, including integration with a NewAPI backend for external authentication and per-user model access.

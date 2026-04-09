@@ -66,7 +66,8 @@ pub async fn route(
     {
         return Err(Json(Error {
             error: ErrorKind::MalformedRequest,
-            reason: extract_reason(&value).unwrap_or_else(|| "New API verification failed".to_owned()),
+            reason: extract_reason(&value)
+                .unwrap_or_else(|| "New API verification failed".to_owned()),
         }));
     }
 
@@ -74,13 +75,18 @@ pub async fn route(
 }
 
 fn extract_reason(value: &Value) -> Option<String> {
-    [value.get("message"), value.get("msg"), value.get("reason"), value.get("error")]
-        .into_iter()
-        .flatten()
-        .find_map(|item| match item {
-            Value::String(text) if !text.is_empty() => Some(text.clone()),
-            _ => None,
-        })
+    [
+        value.get("message"),
+        value.get("msg"),
+        value.get("reason"),
+        value.get("error"),
+    ]
+    .into_iter()
+    .flatten()
+    .find_map(|item| match item {
+        Value::String(text) if !text.is_empty() => Some(text.clone()),
+        _ => None,
+    })
 }
 
 #[cfg(test)]
@@ -94,6 +100,9 @@ mod tests {
             "success": false
         });
 
-        assert_eq!(extract_reason(&value).as_deref(), Some("email already exists"));
+        assert_eq!(
+            extract_reason(&value).as_deref(),
+            Some("email already exists")
+        );
     }
 }

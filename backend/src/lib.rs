@@ -233,6 +233,7 @@ pub fn build_app(state: Arc<AppState>) -> Router {
             Router::new()
                 .nest("/chat", routes::chat::routes())
                 .nest("/user", routes::user::routes())
+                .nest("/data", routes::data::routes())
                 .nest("/message", routes::message::routes())
                 .nest("/model", routes::model::routes())
                 .layer(middlewares::compression::ZstdCompressionLayer)

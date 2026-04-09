@@ -16,6 +16,7 @@ pub struct Token {
     pub token: String,
     pub exp: String,
 }
+
 pub fn new_token(app: &AppState, user_id: i32) -> Result<Token, AppError> {
     let mut claim = Claims::new().kind(ErrorKind::Internal)?;
 

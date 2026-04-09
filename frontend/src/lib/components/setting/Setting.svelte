@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { Star, X } from '@lucide/svelte';
-	import { CircleUser, EthernetPort, LogOut, ShieldUser } from '@lucide/svelte';
+	import { CircleUser, EthernetPort, LogOut, ShieldUser, Wallet } from '@lucide/svelte';
 	import { getCurrentUser } from '$lib/api/user.svelte';
 	import { logout } from '$lib/api/auth';
 	import { Dialog, Tabs } from 'bits-ui';
@@ -9,6 +9,7 @@
 	import Account from './tabs/Account.svelte';
 	import Admin from './tabs/Admin.svelte';
 	import Openrouter from './tabs/Openrouter.svelte';
+	import Pay from './tabs/Pay.svelte';
 
 	let { open = $bindable() } = $props();
 	let value = $state('account');
@@ -62,6 +63,14 @@
 							</Tabs.Trigger>
 						{/if}
 						<Tabs.Trigger
+							value="pay"
+							class="cursor-pointer rounded px-3 py-2 text-left duration-150 hover:bg-primary hover:text-text-hover
+						data-[state=active]:bg-primary data-[state=active]:text-text-hover"
+						>
+							<Wallet class="inline-block h-5 w-5 md:mr-2" />
+							<span class="hidden md:inline-block"> Pay </span>
+						</Tabs.Trigger>
+						<Tabs.Trigger
 							value="openrouter"
 							class="cursor-pointer rounded px-3 py-2 text-left duration-150 hover:bg-primary hover:text-text-hover
 						data-[state=active]:bg-primary data-[state=active]:text-text-hover"
@@ -103,6 +112,10 @@
 							<Admin />
 						</Tabs.Content>
 					{/if}
+					<Tabs.Content value="pay" class="flex h-full flex-col">
+						<Dialog.Title class="pb-6 text-center text-xl">Pay</Dialog.Title>
+						<Pay />
+					</Tabs.Content>
 					<Tabs.Content value="openrouter" class="flex h-full flex-col">
 						<Dialog.Title class="pb-6 text-center text-xl">Isomoes API</Dialog.Title>
 						<Openrouter />
