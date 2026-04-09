@@ -11,6 +11,12 @@ export function getError(data: any): APIError | undefined {
 	}
 }
 
+function shouldIgnoreError(error: APIError) {
+	const hasToken = Boolean(get(token)?.value);
+
+	return !hasToken && error.error === 'unauthorized';
+}
+
 export async function RawAPIFetch<P = any>(
 	path: string,
 	body: P | null = null,
@@ -49,7 +55,9 @@ export async function APIFetch<D, P = any>(
 	try {
 		const resJson: D | APIError = await res.json();
 		const error = getError(resJson);
-		if (error) dispatchError(error.error, error.reason);
+		if (error) {
+			if (!shouldIgnoreError(error)) dispatchError(error.error, error.reason);
+		}
 		else return resJson as D;
 	} catch (_) {
 		dispatchError('API(typeshare)', 'maybe backend is disconnected');
