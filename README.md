@@ -111,16 +111,8 @@ This lets ichat proxy auth and account actions server-to-server without exposing
 | `NEWAPI_AUTH_BEARER` | Optional bearer token for NewAPI auth requests | unset |
 | `NEWAPI_AUTH_USER_HEADER` | Optional header name used to forward the NewAPI user identity | `New-Api-User` |
 
-## Documentation
-
-https://isomoes.github.io/ichat-web/
-
 ## Acknowledgement
 
 ichat builds on the earlier `llumen` project by pinkfuwa:
 
 https://github.com/pinkfuwa/llumen
-
-<div align="center">
-  Built with :heart: by pinkfuwa. Keep it simple, keep it fast.
-</div>
