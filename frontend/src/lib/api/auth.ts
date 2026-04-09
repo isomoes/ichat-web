@@ -5,12 +5,14 @@ import { createMutation, type MutationResult } from './state';
 import { APIFetch } from './state/errorHandle';
 import { resetChatroomState } from './chatroom.svelte';
 import { resetMessageState } from './message.svelte';
+import { resetModelState, setModelIds } from './model.svelte';
 import { resetUserState } from './user.svelte';
 
 import type {
 	HeaderAuthResp,
 	LoginReq,
 	LoginResp,
+	ModelIdsResp,
 	RegisterReq,
 	RegisterResp,
 	RenewReq,
@@ -27,6 +29,7 @@ export interface User {
 function resetSessionState() {
 	resetChatroomState();
 	resetMessageState();
+	resetModelState();
 	resetUserState();
 }
 
@@ -43,6 +46,10 @@ function storeAuthToken(data: LoginResp | RegisterResp) {
 		value: data.token,
 		expireAt: expireAt.toString(),
 		renewAt: renewAt.toString()
+	});
+
+	void APIFetch<ModelIdsResp>('model/ids', {}).then((res) => {
+		if (res) setModelIds(res);
 	});
 }
 
@@ -89,7 +96,7 @@ export async function TryHeaderAuth() {
 
 export function initAuth() {
 	const unsubscribers = [
-			token.subscribe((token) => {
+		token.subscribe((token) => {
 			const pathname = page.url.pathname;
 			if (pathname.startsWith('/markdown')) return;
 			if (token) {

@@ -45,6 +45,7 @@ export {
 	useModelIdsQueryEffect,
 	getModels,
 	getModelIds,
+	refreshModelIds,
 	setModels,
 	setModelIds,
 	deleteModel,

@@ -9,7 +9,7 @@ export enum ChatMode {
 }
 
 export interface ChatCreateReq {
-	model_id: number;
+	model_id: string;
 	mode: ChatMode;
 }
 
@@ -60,7 +60,7 @@ export interface ChatPaginateReqRange {
 
 export interface ChatPaginateRespList {
 	id: number;
-	model_id?: number;
+	model_id?: string;
 	title?: string;
 }
 
@@ -74,7 +74,7 @@ export interface ChatReadReq {
 
 export interface ChatReadResp {
 	mode: ChatMode;
-	model_id?: number;
+	model_id?: string;
 	title?: string;
 }
 
@@ -278,7 +278,7 @@ export interface MessageCreateReqFile {
 
 export interface MessageCreateReq {
 	chat_id: number;
-	model_id: number;
+	model_id: string;
 	mode: ChatMode;
 	text: string;
 	files: MessageCreateReqFile[];

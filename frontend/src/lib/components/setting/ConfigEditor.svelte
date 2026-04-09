@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { checkConfig } from '../../api/model.svelte';
+	import { checkConfig, refreshModelIds } from '../../api/model.svelte';
 	import Toml from '../codemirror/Toml.svelte';
 	import { _ } from 'svelte-i18n';
 	import Warning from './Warning.svelte';
-	import { CircleCheck } from '@lucide/svelte';
+	import { CircleCheck, RefreshCw } from '@lucide/svelte';
 	import { fade } from 'svelte/transition';
 	import Button from '$lib/ui/Button.svelte';
 	import type { ModelCheckResp } from '$lib/api/types';
@@ -16,6 +16,7 @@
 
 	let configErrored = $state(false);
 	let errorReason = $state('');
+	let refreshingModelIds = $state(false);
 </script>
 
 <Toml
@@ -27,6 +28,21 @@
 />
 
 <div class="mt-3 flex items-center justify-start space-x-2">
+	<Button
+		class="flex items-center gap-2 px-3 py-2"
+		disabled={refreshingModelIds}
+		onclick={async () => {
+			refreshingModelIds = true;
+			try {
+				await refreshModelIds();
+			} finally {
+				refreshingModelIds = false;
+			}
+		}}
+	>
+		<RefreshCw class={`h-4 w-4 ${refreshingModelIds ? 'animate-spin' : ''}`} />
+		{$_('setting.refresh_model_ids')}
+	</Button>
 	<Button
 		class="px-3 py-2"
 		onclick={() =>

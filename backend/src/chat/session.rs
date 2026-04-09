@@ -20,7 +20,8 @@ use crate::utils::model::ModelChecker;
 
 /// Loaded information about the model driving this session.
 pub struct SessionModel {
-    pub id: i32,
+    pub persisted_id: Option<i32>,
+    pub upstream_model_id: Option<String>,
     pub config: ModelConfig,
 }
 
@@ -52,12 +53,12 @@ impl CompletionSession {
         ctx: Arc<Context>,
         user_id: i32,
         chat_id: i32,
-        model_id: i32,
+        model_id: String,
         mode: protocol::ModeKind,
     ) -> Result<Self> {
         let db = &ctx.db;
 
-        let (user, chat, model_entity) = tokio::try_join!(
+        let (user, chat) = tokio::try_join!(
             async {
                 user::Entity::find_by_id(user_id)
                     .one(db)
@@ -70,15 +71,37 @@ impl CompletionSession {
                     .await?
                     .context("chat not found")
             },
-            async {
-                entity_model::Entity::find_by_id(model_id)
-                    .one(db)
-                    .await?
-                    .context("model not found")
-            },
         )?;
 
-        let model_config = <ModelConfig as ModelChecker>::from_toml(&model_entity.config)?;
+        let model = match chat.model_id {
+            Some(persisted_id) if chat.upstream_model_id.is_none() => {
+                let persisted_model = entity_model::Entity::find_by_id(persisted_id)
+                    .one(db)
+                    .await?
+                    .context("model not found")?;
+                let model_config =
+                    <ModelConfig as ModelChecker>::from_toml(&persisted_model.config)?;
+
+                if model_config.model_id == model_id {
+                    SessionModel {
+                        persisted_id: Some(persisted_id),
+                        upstream_model_id: None,
+                        config: model_config,
+                    }
+                } else {
+                    SessionModel {
+                        persisted_id: None,
+                        upstream_model_id: Some(model_id.clone()),
+                        config: default_model_config(model_id.clone()),
+                    }
+                }
+            }
+            _ => SessionModel {
+                persisted_id: None,
+                upstream_model_id: Some(model_id.clone()),
+                config: default_model_config(model_id.clone()),
+            },
+        };
 
         let history = Message::find()
             .filter(message::Column::ChatId.eq(chat_id))
@@ -118,10 +141,7 @@ impl CompletionSession {
                 preference: user.preference,
                 newapi_api_key: user.newapi_api_key,
             },
-            model: SessionModel {
-                id: model_id,
-                config: model_config,
-            },
+            model,
             chat,
             message,
             history,
@@ -363,7 +383,8 @@ impl CompletionSession {
 
     /// Syncs the session's model and mode to the chat record.
     pub async fn sync_chat_model(&mut self) -> Result<()> {
-        let model_changed = self.chat.model_id != Some(self.model.id);
+        let model_changed = self.chat.model_id != self.model.persisted_id
+            || self.chat.upstream_model_id != self.model.upstream_model_id;
         let mode_changed = self.chat.mode != self.mode;
 
         if !model_changed && !mode_changed {
@@ -372,8 +393,10 @@ impl CompletionSession {
 
         let mut chat_active: chat::ActiveModel = self.chat.clone().into();
         if model_changed {
-            chat_active.model_id = Set(Some(self.model.id));
-            self.chat.model_id = Some(self.model.id);
+            chat_active.model_id = Set(self.model.persisted_id);
+            chat_active.upstream_model_id = Set(self.model.upstream_model_id.clone());
+            self.chat.model_id = self.model.persisted_id;
+            self.chat.upstream_model_id = self.model.upstream_model_id.clone();
         }
         if mode_changed {
             chat_active.mode = Set(self.mode);
@@ -488,6 +511,15 @@ impl CompletionSession {
         log::info!("generate_title: got response: '{}'", title);
 
         if title.is_empty() { None } else { Some(title) }
+    }
+}
+
+fn default_model_config(model_id: String) -> ModelConfig {
+    ModelConfig {
+        display_name: model_id.clone(),
+        model_id,
+        capability: ModelCapability::default(),
+        parameter: ModelParameter::default(),
     }
 }
 

@@ -33,7 +33,7 @@ import { dev } from '$app/environment';
 
 export interface CreateRoomRequest {
 	message: string;
-	modelId: number;
+	modelId: string;
 	files: {
 		name: string;
 		id: number;

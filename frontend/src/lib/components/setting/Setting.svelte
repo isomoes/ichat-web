@@ -9,12 +9,9 @@
 	import Account from './tabs/Account.svelte';
 	import Admin from './tabs/Admin.svelte';
 	import Openrouter from './tabs/Openrouter.svelte';
-	import OpenrouterNew from './tabs/openrouter/OpenrouterNew.svelte';
-	import OpenrouterEdit from './tabs/openrouter/OpenrouterEdit.svelte';
 
 	let { open = $bindable() } = $props();
 	let value = $state('account');
-	let id: undefined | number = $state(undefined);
 	const currentUser = $derived(getCurrentUser());
 	const showAdmin = $derived(!currentUser?.external_auth);
 </script>
@@ -70,7 +67,7 @@
 						data-[state=active]:bg-primary data-[state=active]:text-text-hover"
 						>
 							<EthernetPort class="inline-block h-5 w-5 md:mr-2" />
-							<span class="hidden md:inline-block"> Openrouter </span>
+							<span class="hidden md:inline-block"> Isomoes API </span>
 						</Tabs.Trigger>
 					</div>
 					<div class="flex flex-col space-y-2">
@@ -107,30 +104,8 @@
 						</Tabs.Content>
 					{/if}
 					<Tabs.Content value="openrouter" class="flex h-full flex-col">
-						<Dialog.Title class="pb-6 text-center text-xl">Openrouter</Dialog.Title>
-						<Openrouter bind:id bind:value />
-					</Tabs.Content>
-					<Tabs.Content
-						value="openrouter_new"
-						class="flex w-full flex-col justify-between overflow-auto"
-					>
-						<Dialog.Title class="pb-6 text-center text-xl">
-							{$_('setting.add_model')}
-						</Dialog.Title>
-
-						<OpenrouterNew bind:value />
-					</Tabs.Content>
-					<Tabs.Content
-						value="openrouter_edit"
-						class="flex w-full flex-col justify-between overflow-auto"
-					>
-						<Dialog.Title class="pb-6 text-center text-xl">
-							{$_('setting.edit_model')}
-						</Dialog.Title>
-
-						{#if id != undefined}
-							<OpenrouterEdit {id} bind:value />
-						{/if}
+						<Dialog.Title class="pb-6 text-center text-xl">Isomoes API</Dialog.Title>
+						<Openrouter />
 					</Tabs.Content>
 				</div>
 			</Tabs.Root>

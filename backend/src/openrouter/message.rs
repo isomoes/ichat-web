@@ -205,12 +205,17 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("clock should be after epoch")
             .as_nanos();
-        std::env::temp_dir().join(format!("ichat-web-{name}-{}-{nanos}.redb", std::process::id()))
+        std::env::temp_dir().join(format!(
+            "ichat-web-{name}-{}-{nanos}.redb",
+            std::process::id()
+        ))
     }
 
     async fn make_blob_reader(size: usize) -> BlobReader {
         let path = temp_blob_path("attachment-limit");
-        let blob = BlobDB::new(Arc::new(redb::Database::create(&path).expect("db should create")));
+        let blob = BlobDB::new(Arc::new(
+            redb::Database::create(&path).expect("db should create"),
+        ));
         let bytes = bytes::Bytes::from(vec![b'a'; size]);
         blob.insert(1, size, tokio_stream::iter(vec![bytes]))
             .await

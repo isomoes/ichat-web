@@ -57,7 +57,7 @@ pub struct ChatPaginateResp {
 pub struct ChatPaginateRespList {
     pub id: i32,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub model_id: Option<i32>,
+    pub model_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
 }
@@ -103,7 +103,7 @@ pub async fn route(
         .into_iter()
         .map(|x| ChatPaginateRespList {
             id: x.id,
-            model_id: x.model_id,
+            model_id: x.upstream_model_id,
             title: x.title,
         })
         .collect();

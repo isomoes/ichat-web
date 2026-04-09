@@ -11,7 +11,7 @@
 	import Stop from './Stop.svelte';
 	import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
 	import { ChatMode as Mode } from '$lib/api/types';
-	import { getModels } from '$lib/api/model.svelte.js';
+	import { getModelIds } from '$lib/api/model.svelte.js';
 	import { FileUp } from '@lucide/svelte';
 	import { getSupportedFileExtensions, separateFiles } from './fileTypes';
 	import Confirm from './Confirm.svelte';
@@ -47,18 +47,12 @@
 
 	let container = $state<HTMLElement | null>();
 
-	const models = $derived(getModels());
+	const modelIds = $derived(getModelIds()?.ids ?? []);
 
 	const modelIdValid = $derived(
-		modelId != null && (models == undefined || models.list.some((m) => m.id.toString() == modelId))
+		modelId != null && (modelIds.length === 0 || modelIds.includes(modelId))
 	);
-
-	let selectModelCap = $derived.by(() => {
-		let uselessFn = (a: any) => {};
-		uselessFn(modelId);
-		return models?.list.find((x) => x.id.toString() == modelId);
-	});
-	let extensions = $derived(getSupportedFileExtensions(selectModelCap));
+	let extensions = $derived(getSupportedFileExtensions());
 
 	function handleNewFiles(newFiles: File[]) {
 		const { supported, unsupported } = separateFiles(newFiles, extensions);
@@ -178,12 +172,12 @@
 	<div class="flex flex-row items-center justify-between">
 		<div class="flex h-11 w-full grow items-center justify-start space-x-2">
 			<ModelSelector bind:value={modelId} />
-			<ModeSelector bind:value={mode} limited={!selectModelCap?.tool} />
+			<ModeSelector bind:value={mode} limited={false} />
 			<ActionMenu
 				bind:files
 				bind:content
 				{disabled}
-				audioInput={selectModelCap?.audio_input ?? false}
+				audioInput={false}
 				onFilesAdded={handleNewFiles}
 			/>
 		</div>

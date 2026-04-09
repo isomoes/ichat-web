@@ -74,9 +74,20 @@ export function setModelIds(data: ModelIdsResp | undefined) {
 	modelIds = data;
 }
 
+export function resetModelState() {
+	models = undefined;
+	modelIds = undefined;
+}
+
 async function refreshModels() {
 	const res = await APIFetch<ModelListResp>('model/list', {});
 	if (res) models = res;
+}
+
+export async function refreshModelIds() {
+	const res = await APIFetch<ModelIdsResp>('model/ids', {});
+	if (res) modelIds = res;
+	return res;
 }
 
 // Mutations

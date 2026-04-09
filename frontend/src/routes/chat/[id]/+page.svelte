@@ -41,7 +41,7 @@
 			if (inited) return;
 			inited = true;
 			mode = room.mode;
-			modelId = room?.model_id ? room.model_id.toString() : null;
+			modelId = room?.model_id ?? null;
 		});
 	});
 
@@ -68,7 +68,7 @@
 					chat_id: currentId,
 					text: content,
 					mode: mode!,
-					model_id: parseInt(modelId!),
+					model_id: modelId!,
 					files: uploadedFiles
 				});
 				content = '';

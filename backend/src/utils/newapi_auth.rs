@@ -176,6 +176,37 @@ impl NewApiAuthClient {
             .context("New API key creation succeeded but no key was returned")
     }
 
+    pub async fn fetch_model_ids(&self, api_key: &str) -> anyhow::Result<Vec<String>> {
+        let response = self
+            .http
+            .get(format!("{}/v1/models", self.base_url))
+            .bearer_auth(api_key)
+            .send()
+            .await
+            .context("failed to query New API model list")?;
+        let status = response.status();
+        let value = response
+            .json::<Value>()
+            .await
+            .context("failed to decode New API model list")?;
+
+        if !status.is_success() {
+            anyhow::bail!(extract_reason_value(&value).unwrap_or_else(|| {
+                format!("New API model list failed with status {}", status)
+            }));
+        }
+
+        let models = value
+            .get("data")
+            .and_then(Value::as_array)
+            .context("New API model list missing data")?;
+
+        Ok(models
+            .iter()
+            .filter_map(|model| extract_stringish_field(model, &["id"]))
+            .collect())
+    }
+
     fn build_session_client(&self) -> anyhow::Result<Client> {
         Client::builder()
             .cookie_store(true)
@@ -487,4 +518,5 @@ mod tests {
 
         assert_eq!(extract_external_user_id(body).as_deref(), Some("1"));
     }
+
 }

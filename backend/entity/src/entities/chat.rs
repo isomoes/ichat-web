@@ -10,6 +10,8 @@ pub struct Model {
     pub owner_id: i32,
     #[sea_orm(nullable)]
     pub model_id: Option<i32>,
+    #[sea_orm(nullable)]
+    pub upstream_model_id: Option<String>,
     pub mode: protocol::ModeKind,
     #[sea_orm(nullable)]
     pub title: Option<String>,

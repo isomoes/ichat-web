@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { useModelsQueryEffect, getModels } from '$lib/api/model.svelte.js';
+	import { useModelIdsQueryEffect } from '$lib/api/model.svelte.js';
 	import { useUserQueryEffect, getCurrentUser } from '$lib/api/user.svelte.js';
 	let { children, params } = $props();
 	import { Sidebar } from '$lib/components';
@@ -35,7 +35,7 @@
 	onDestroy(() => document.body.removeEventListener('keydown', onKeydown));
 
 	useUserQueryEffect();
-	useModelsQueryEffect();
+	useModelIdsQueryEffect();
 
 	$effect(() => {
 		if (!contentElement) {

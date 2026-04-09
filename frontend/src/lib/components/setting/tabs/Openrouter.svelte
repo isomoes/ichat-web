@@ -1,21 +1,41 @@
 <script lang="ts">
-	import ModelGrid from '$lib/components/setting/ModelGrid.svelte';
-	import Warning from '$lib/components/setting/Warning.svelte';
-	import { Plus } from '@lucide/svelte';
+	import { getModelIds, setModelIds } from '$lib/api/model.svelte';
+	import { APIFetch } from '$lib/api';
+	import type { ModelIdsResp } from '$lib/api/types';
+	import { RefreshCw } from '@lucide/svelte';
 	import { _ } from 'svelte-i18n';
 	import Button from '$lib/ui/Button.svelte';
 
-	let { id = $bindable(), value = $bindable() }: { id?: number; value: string } = $props();
+	const modelIds = $derived(getModelIds()?.ids);
+	let refreshing = $state(false);
 </script>
 
-<Warning>{$_('setting.config_override_warning')}</Warning>
-<div class="my-2 border-b border-outline pb-2">
+<div class="my-2 flex items-center justify-between border-b border-outline pb-2">
+	<div class="text-sm text-text/80">{$_('setting.upstream_model_list')}</div>
 	<Button
-		class="flex w-full flex-row items-center justify-between px-3 py-2"
-		onclick={() => (value = 'openrouter_new')}
+		class="flex items-center gap-2 px-3 py-2"
+		disabled={refreshing}
+		onclick={async () => {
+			refreshing = true;
+			try {
+				const res = await APIFetch<ModelIdsResp>('model/ids', {});
+				if (res) setModelIds(res);
+			} finally {
+				refreshing = false;
+			}
+		}}
 	>
-		{$_('setting.add_model')}
-		<Plus class="lucide-icon lucide lucide-trash h-10 w-10 rounded-lg p-2" />
+		<RefreshCw class={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+		{$_('setting.refresh_model_ids')}
 	</Button>
 </div>
-<ModelGrid bind:id bind:value />
+
+{#if modelIds == undefined}
+	<div class="mb-4 flex items-center justify-center p-6 text-lg">{$_('common.loading')}</div>
+{:else}
+	<div class="grow space-y-2 overflow-y-auto">
+		{#each modelIds as modelId (modelId)}
+			<div class="rounded-lg border border-outline px-3 py-2 font-mono text-sm">{modelId}</div>
+		{/each}
+	</div>
+{/if}

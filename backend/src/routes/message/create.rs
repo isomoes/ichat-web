@@ -25,7 +25,7 @@ pub struct MessageCreateReqFile {
 #[typeshare]
 pub struct MessageCreateReq {
     pub chat_id: i32,
-    pub model_id: i32,
+    pub model_id: String,
     pub mode: ChatMode,
     pub text: String,
     pub files: Vec<MessageCreateReqFile>,

@@ -48,7 +48,7 @@
 			mutate(
 				{
 					message: content,
-					modelId: parseInt(modelId.current),
+					modelId: modelId.current,
 					files: uploadedFiles,
 					mode
 				},

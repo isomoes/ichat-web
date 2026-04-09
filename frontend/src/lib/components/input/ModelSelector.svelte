@@ -1,18 +1,30 @@
 <script lang="ts">
 	import { LoaderCircle } from '@lucide/svelte';
 	import Select from '$lib/ui/Select.svelte';
-	import { getModels } from '$lib/api/model.svelte';
+	import { getModelIds } from '$lib/api/model.svelte';
 	import { _ } from 'svelte-i18n';
 	let { value = $bindable<string | undefined>(), disabled = false } = $props();
 
-	const data = $derived(getModels());
+	const data = $derived(getModelIds());
 
-	let selectData = $derived(
-		data?.list.map((x) => ({
-			value: `${x.id}`,
-			label: x.display_name
-		}))
-	);
+	let selectData = $derived.by(() => {
+		const ids = data?.ids ?? [];
+		if (data == undefined) return undefined;
+
+		const options = ids.map((id) => ({
+			value: id,
+			label: id
+		}));
+
+		if (value && !ids.includes(value)) {
+			options.unshift({
+				value,
+				label: value
+			});
+		}
+
+		return options;
+	});
 </script>
 
 {#if selectData == undefined}

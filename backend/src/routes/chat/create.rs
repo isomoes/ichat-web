@@ -11,7 +11,7 @@ use crate::{AppState, errors::*, middlewares::auth::UserId, utils::chat::ChatMod
 #[derive(Debug, Deserialize)]
 #[typeshare]
 pub struct ChatCreateReq {
-    pub model_id: i32,
+    pub model_id: String,
     pub mode: ChatMode,
 }
 
@@ -34,7 +34,8 @@ pub async fn route(
 
     let chat_id = Chat::insert(chat::ActiveModel {
         owner_id: Set(user_id),
-        model_id: Set(Some(req.model_id)),
+        model_id: Set(None),
+        upstream_model_id: Set(Some(req.model_id)),
         title: Set(None),
         mode: Set(req.mode.into()),
         ..Default::default()

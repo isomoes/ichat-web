@@ -19,7 +19,7 @@ pub struct ChatReadReq {
 pub struct ChatReadResp {
     pub mode: ChatMode,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub model_id: Option<i32>,
+    pub model_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
 }
@@ -44,7 +44,13 @@ pub async fn route(
 
     match res {
         Some((chat, model)) => Ok(Json(ChatReadResp {
-            model_id: model.map(|x| x.id),
+            model_id: chat.upstream_model_id.or_else(|| {
+                model.and_then(|model| {
+                    toml::from_str::<protocol::ModelConfig>(&model.config)
+                        .ok()
+                        .map(|config| config.model_id)
+                })
+            }),
             mode: chat.mode.into(),
             title: chat.title,
         })),
