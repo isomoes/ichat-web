@@ -22,6 +22,12 @@ export default defineConfig({
 		legalComments: 'external'
 	},
 	server: {
-		allowedHosts: ['.trycloudflare.com'] // allows example.com, foo.example.com, etc.
+		allowedHosts: ['.trycloudflare.com'], // allows example.com, foo.example.com, etc.
+		proxy: {
+			'/api': {
+				target: 'http://127.0.0.1:8001',
+				changeOrigin: true
+			}
+		}
 	}
 });

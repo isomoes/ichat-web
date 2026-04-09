@@ -11,7 +11,7 @@ help:
 	@printf '%s\n' \
 		'ichat build targets:' \
 		'  make install              Install frontend dependencies' \
-		'  make dev                  Run backend with dev features' \
+		'  make dev                  Run backend and frontend dev servers' \
 		'  make dev-build            Build frontend, then run backend' \
 		'  make build-frontend       Build frontend only' \
 		'  make build                Build full application' \
@@ -30,6 +30,10 @@ build-frontend:
 	pnpm build --dir $(FRONTEND_DIR)
 
 dev:
+	@set -eu; \
+	pnpm --dir $(FRONTEND_DIR) dev & \
+	frontend_pid=$$!; \
+	trap 'kill "'"'$$frontend_pid'"'" 2>/dev/null || true' INT TERM EXIT; \
 	cd $(BACKEND_DIR) && cargo xtask run
 
 dev-build:

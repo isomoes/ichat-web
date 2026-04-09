@@ -2,14 +2,8 @@ import { dispatchError } from '$lib/error';
 import { get } from 'svelte/store';
 import type { Error as APIError } from '../types';
 import { token } from '$lib/store';
-import { dev } from '$app/environment';
 
-export const apiBase = dev
-	? (() => {
-			const { protocol, hostname } = new URL(window.location.href);
-			return `${protocol}//${hostname}:8001/api/`;
-		})()
-	: '/api/';
+export const apiBase = '/api/';
 
 export function getError(data: any): APIError | undefined {
 	if (typeof data === 'object' && data !== null && 'error' in data) {
