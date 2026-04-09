@@ -72,7 +72,7 @@
 		Create your account
 	</h2>
 	<p class="text-md mb-3 px-6 text-center font-serif">
-		Register through llumen. The browser only talks to this server.
+		Register through ichat. The browser only talks to this server.
 	</p>
 	<div class="min-w-[80vw] items-center rounded-lg p-6 md:min-w-lg">
 		<form class="grid grid-rows-5 gap-4" onsubmit={handleSubmit} inert={isPending()}>

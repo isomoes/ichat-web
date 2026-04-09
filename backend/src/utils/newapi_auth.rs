@@ -3,6 +3,11 @@ use dotenv::var;
 use reqwest::Client;
 use serde_json::{Value, json};
 
+const SELF_ID_FIELDS: &[&str] = &["id", "user_id"];
+const SELF_USERNAME_FIELDS: &[&str] = &["username", "name", "email"];
+const TOKEN_FIELDS: &[&str] = &["token", "access_token", "key"];
+const REASON_FIELDS: &[&str] = &["message", "msg", "reason", "error"];
+
 #[derive(Debug, Clone)]
 pub struct ExternalIdentity {
     pub external_user_id: String,
@@ -106,9 +111,11 @@ impl NewApiAuthClient {
         }
 
         let bearer_token = extract_bearer_token(&response_text);
+        let external_user_id = extract_external_user_id(&response_text);
 
         Ok(UpstreamAuth {
             bearer_token,
+            external_user_id,
             has_session_cookie,
         })
     }
@@ -118,6 +125,10 @@ impl NewApiAuthClient {
 
         if let Some(service_bearer) = &self.service_bearer {
             request = request.header("X-NewApi-Service-Bearer", service_bearer);
+        }
+
+        if let Some(external_user_id) = &auth.external_user_id {
+            request = request.header(&self.user_header, external_user_id);
         }
 
         if let Some(bearer_token) = &auth.bearer_token {
@@ -141,9 +152,9 @@ impl NewApiAuthClient {
         }
 
         let object = value.get("data").unwrap_or(&value);
-        let external_user_id = extract_stringish_field(object, &["id", "user_id"])
+        let external_user_id = extract_stringish_field(object, SELF_ID_FIELDS)
             .context("New API self response missing id")?;
-        let username = extract_stringish_field(object, &["username", "name", "email"])
+        let username = extract_stringish_field(object, SELF_USERNAME_FIELDS)
             .context("New API self response missing username")?;
 
         Ok(ExternalIdentity {
@@ -156,6 +167,7 @@ impl NewApiAuthClient {
 #[derive(Debug, Clone)]
 struct UpstreamAuth {
     bearer_token: Option<String>,
+    external_user_id: Option<String>,
     #[allow(dead_code)]
     has_session_cookie: bool,
 }
@@ -164,7 +176,14 @@ fn extract_bearer_token(text: &str) -> Option<String> {
     let value: Value = serde_json::from_str(text).ok()?;
     let object = value.get("data").unwrap_or(&value);
 
-    extract_stringish_field(object, &["token", "access_token", "key"])
+    extract_stringish_field(object, TOKEN_FIELDS)
+}
+
+fn extract_external_user_id(text: &str) -> Option<String> {
+    let value: Value = serde_json::from_str(text).ok()?;
+    let object = value.get("data").unwrap_or(&value);
+
+    extract_stringish_field(object, SELF_ID_FIELDS)
 }
 
 fn extract_reason(text: &str) -> Option<String> {
@@ -173,10 +192,10 @@ fn extract_reason(text: &str) -> Option<String> {
 }
 
 fn extract_reason_value(value: &Value) -> Option<String> {
-    extract_stringish_field(value, &["message", "msg", "reason", "error"]).or_else(|| {
+    extract_stringish_field(value, REASON_FIELDS).or_else(|| {
         value
             .get("data")
-            .and_then(|data| extract_stringish_field(data, &["message", "msg", "reason", "error"]))
+            .and_then(|data| extract_stringish_field(data, REASON_FIELDS))
     })
 }
 
@@ -194,4 +213,27 @@ fn extract_stringish_field(value: &Value, fields: &[&str]) -> Option<String> {
     }
 
     None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn extracts_external_user_id_from_data_payload() {
+        let body = r#"{
+            "data": {
+                "display_name": "Root User",
+                "group": "default",
+                "id": 1,
+                "role": 100,
+                "status": 1,
+                "username": "isomoes"
+            },
+            "message": "",
+            "success": true
+        }"#;
+
+        assert_eq!(extract_external_user_id(body).as_deref(), Some("1"));
+    }
 }

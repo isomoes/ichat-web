@@ -62,12 +62,12 @@ FROM scratch
 
 ARG TARGETPLATFORM
 
-LABEL org.opencontainers.image.title="llumen"
+LABEL org.opencontainers.image.title="ichat"
 LABEL org.opencontainers.image.description="A lightweight, self-hostable LLM chat application."
-LABEL org.opencontainers.image.url="https://github.com/pinkfuwa/llumen"
-LABEL org.opencontainers.image.source="https://github.com/pinkfuwa/llumen"
+LABEL org.opencontainers.image.url="https://github.com/isomoes/ichat-web"
+LABEL org.opencontainers.image.source="https://github.com/isomoes/ichat-web"
 LABEL org.opencontainers.image.authors="eason0729, kaiyohugo"
-LABEL org.opencontainers.image.vendor="llumen"
+LABEL org.opencontainers.image.vendor="ichat"
 
 WORKDIR /static
 WORKDIR /data

@@ -5,7 +5,7 @@ description: "Environment variables and settings"
 
 ## Environment Variables
 
-Llumen uses environment variables for configuration. No config files needed!
+ichat uses environment variables for configuration. No config files needed!
 
 ### Required
 
@@ -35,8 +35,8 @@ docker run -d \
   -e DATA_PATH="/data" \
   -e BIND_ADDR="0.0.0.0:8080" \
   -p 8080:8080 \
-  -v ./llumen-data:/data \
-  ghcr.io/pinkfuwa/llumen:latest
+  -v ./ichat-data:/data \
+  ghcr.io/isomoes/ichat-web:latest
 ```
 
 ## API Provider Configuration
@@ -71,7 +71,7 @@ export API_BASE="https://api.openai.com"
 # Start Ollama
 ollama serve
 
-# Configure llumen
+# Configure ichat
 export API_KEY="ollama"
 export API_BASE="http://localhost:11434/v1"
 ```
@@ -87,7 +87,7 @@ export API_BASE="https://your-endpoint.com/v1"
 
 ### External User Auth With New API
 
-To delegate login and registration to a separate New API deployment while keeping llumen conversation history local:
+To delegate login and registration to a separate New API deployment while keeping ichat conversation history local:
 
 ```bash
 export NEWAPI_AUTH_BASE="https://newapi.example.com"
@@ -102,16 +102,16 @@ export NEWAPI_AUTH_USER_HEADER="New-Api-User"
 
 Behavior:
 
-- Your browser still talks only to llumen
-- llumen backend calls New API server-to-server
-- Conversation history, preferences, and file ownership stay in llumen's local database
-- Different users cannot see each other's local history because llumen still scopes chats by local owner id
+- Your browser still talks only to ichat
+- ichat backend calls New API server-to-server
+- Conversation history, preferences, and file ownership stay in ichat's local database
+- Different users cannot see each other's local history because ichat still scopes chats by local owner id
 
 ## Storage Configuration
 
 ### Data Directory
 
-Llumen stores:
+ichat stores:
 - Conversation history
 - User preferences
 - Session data
@@ -119,15 +119,15 @@ Llumen stores:
 
 **Docker:**
 ```bash
--v ./llumen-data:/data
+-v ./ichat-data:/data
 -e DATA_PATH=/data
 ```
 
 **Native:**
 ```bash
-export DATA_PATH=/var/lib/llumen
+export DATA_PATH=/var/lib/ichat
 mkdir -p $DATA_PATH
-./llumen
+./ichat
 ```
 
 ### Data Structure
@@ -166,7 +166,7 @@ BIND_ADDR=0.0.0.0:8080
 If using Nginx, Caddy, or similar:
 
 ```bash
-# Llumen listens locally
+# ichat listens locally
 BIND_ADDR=127.0.0.1:3000
 
 # Reverse proxy handles external access
@@ -177,7 +177,7 @@ Example Nginx config:
 ```nginx
 server {
     listen 80;
-    server_name llumen.example.com;
+    server_name ichat.example.com;
     
     location / {
         proxy_pass http://127.0.0.1:3000;
@@ -215,14 +215,14 @@ Settings configurable through the web interface:
 
 ### Multiple Instances
 
-Run multiple llumen instances:
+Run multiple ichat instances:
 
 ```bash
 # Instance 1
-docker run -d --name llumen-1 -p 8001:80 -e API_KEY="..." -v ./data1:/data ghcr.io/pinkfuwa/llumen:latest
+docker run -d --name ichat-1 -p 8001:80 -e API_KEY="..." -v ./data1:/data ghcr.io/isomoes/ichat-web:latest
 
 # Instance 2
-docker run -d --name llumen-2 -p 8002:80 -e API_KEY="..." -v ./data2:/data ghcr.io/pinkfuwa/llumen:latest
+docker run -d --name ichat-2 -p 8002:80 -e API_KEY="..." -v ./data2:/data ghcr.io/isomoes/ichat-web:latest
 ```
 
 ### Custom API Models
@@ -238,14 +238,14 @@ docker run -d \
   --memory="256m" \
   --cpus="1.0" \
   -e API_KEY="..." \
-  ghcr.io/pinkfuwa/llumen:latest
+  ghcr.io/isomoes/ichat-web:latest
 ```
 
 ## Security Best Practices
 
 <Accordion title="External account management">
   - If `NEWAPI_AUTH_BASE` is configured, user login and registration are delegated to your New API instance.
-  - Llumen stores only local conversation history, preferences, and file ownership.
+  - ichat stores only local conversation history, preferences, and file ownership.
   - Password resets and account recovery happen in your New API deployment.
 </Accordion>
 

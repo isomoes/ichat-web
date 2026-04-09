@@ -14,7 +14,7 @@ pub(crate) use crawl::{CrawlTool, get_crawl_tool_def};
 pub(crate) use lua::{LuaReplTool, get_lua_repl_def};
 pub(crate) use web_search::{WebSearchTool, get_web_search_tool_def};
 
-/// Collection of all available tools in llumen.
+/// Collection of all available tools in ichat.
 ///
 /// **Purpose**: Group tools in one place instead of scattering them in Context.
 ///

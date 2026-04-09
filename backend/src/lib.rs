@@ -59,11 +59,13 @@ fn load_api_key() -> String {
         (_, Ok(key)) => key,
         _ => {
             println!("Error: API_KEY environment variable not found.");
-            println!("Note: llumen read environment variable as well as .env file.");
+            println!("Note: ichat read environment variable as well as .env file.");
             println!("You can get a key from https://openrouter.ai/keys");
             println!("Or use alternative setup:");
-            println!("- configuration: https://pinkfuwa.github.io/llumen/user/config/environment");
-            println!("- documentation: https://pinkfuwa.github.io/llumen/");
+            println!(
+                "- configuration: https://isomoes.github.io/ichat-web/user/config/environment"
+            );
+            println!("- documentation: https://isomoes.github.io/ichat-web/");
 
             #[cfg(windows)]
             {
@@ -108,6 +110,8 @@ async fn ensure_external_users_mapped(
         return Ok(());
     }
 
+    remove_seeded_admin_for_external_auth(conn).await?;
+
     let unmapped_users = User::find()
         .filter(entity::user::Column::ExternalUserId.is_null())
         .count(conn)
@@ -119,6 +123,22 @@ async fn ensure_external_users_mapped(
             unmapped_users
         );
     }
+
+    Ok(())
+}
+
+async fn remove_seeded_admin_for_external_auth(conn: &DbConn) -> anyhow::Result<()> {
+    let seeded_admin = User::find()
+        .filter(entity::user::Column::ExternalUserId.is_null())
+        .filter(entity::user::Column::Name.eq("admin"))
+        .one(conn)
+        .await?;
+
+    let Some(seeded_admin) = seeded_admin else {
+        return Ok(());
+    };
+
+    User::delete_by_id(seeded_admin.id).exec(conn).await?;
 
     Ok(())
 }
@@ -241,12 +261,44 @@ pub fn build_app(state: Arc<AppState>) -> Router {
     app
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn external_auth_allows_seeded_admin_cleanup() {
+        let conn = Database::connect("sqlite::memory:")
+            .await
+            .expect("in-memory sqlite should connect");
+        migration::Migrator::up(&conn, None)
+            .await
+            .expect("migrations should apply");
+
+        let external_auth = Arc::new(NewApiAuthClient {
+            base_url: "http://localhost".to_owned(),
+            user_header: "New-Api-User".to_owned(),
+            service_bearer: None,
+            http: reqwest::Client::new(),
+        });
+
+        ensure_external_users_mapped(&conn, Some(&external_auth))
+            .await
+            .expect("seeded admin should not block external auth startup");
+
+        let user_count = User::find()
+            .count(&conn)
+            .await
+            .expect("user count should load");
+        assert_eq!(user_count, 0);
+    }
+}
+
 pub async fn run() -> anyhow::Result<()> {
     dotenv::dotenv().ok();
     crate::utils::logger::init();
 
     #[cfg(feature = "tracing")]
-    let _main_span = info_span!("llumen_backend_startup").entered();
+    let _main_span = info_span!("ichat_backend_startup").entered();
 
     let (state, bind_addr) = build_state_from_env().await?;
     let app = build_app(state);

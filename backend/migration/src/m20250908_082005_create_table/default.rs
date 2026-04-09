@@ -8,7 +8,7 @@ display_name="GPT-OSS 20B"
 # don't put "online" suffix.
 model_id="openai/gpt-oss-20b"
 
-# For more settings, see https://pinkfuwa.github.io/llumen/user/config/model
+# For more settings, see https://isomoes.github.io/ichat-web/user/config/model
 "#;
 
 use pasetors::keys::Generate;

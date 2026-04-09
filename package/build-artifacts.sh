@@ -21,6 +21,6 @@ fi
 
 echo "--- Copying binary to artifacts directory ---"
 
-cp "backend/target/$TARGET_TRIPLE/release/backend" "$ARTIFACTS_DIR/llumen-$TARGET_TRIPLE"
+cp "backend/target/$TARGET_TRIPLE/release/backend" "$ARTIFACTS_DIR/ichat-$TARGET_TRIPLE"
 
-echo "--- Artifact created successfully: $ARTIFACTS_DIR/llumen-$TARGET_TRIPLE ---"
+echo "--- Artifact created successfully: $ARTIFACTS_DIR/ichat-$TARGET_TRIPLE ---"

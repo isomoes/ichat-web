@@ -1,9 +1,9 @@
 /**
- * Llumen documentation theme - matching the main application design
+ * ichat documentation theme - matching the main application design
  */
 
 :root {
-    /* Primary colors matching llumen */
+    /* Primary colors matching ichat */
     --ifm-color-primary: #ef7722;
     --ifm-color-primary-dark: #e6651a;
     --ifm-color-primary-darker: #d96815;
@@ -37,7 +37,7 @@
     --ifm-background-surface-color: #ffffff;
 }
 
-/* Dark mode colors matching llumen's dark theme */
+/* Dark mode colors matching ichat's dark theme */
 [data-theme="dark"] {
     --ifm-color-primary: #ef7722;
     --ifm-color-primary-dark: #e6651a;
@@ -51,7 +51,7 @@
 
     --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.1);
 
-    /* Dark backgrounds matching llumen */
+    /* Dark backgrounds matching ichat */
     --ifm-background-color: #141211;
     --ifm-background-surface-color: #1d1b1a;
 
@@ -94,7 +94,7 @@
         color 0.2s ease-in-out;
 }
 
-/* Custom scrollbar styling (matching llumen) */
+/* Custom scrollbar styling (matching ichat) */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -164,7 +164,7 @@ div[class^="codeBlockContainer"] {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Admonitions (callouts) with llumen colors */
+/* Admonitions (callouts) with ichat colors */
 .admonition {
     border-radius: 8px;
 }

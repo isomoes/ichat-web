@@ -39,8 +39,8 @@
 		"pattern": "显示图案背景"
 	},
 	"login": {
-		"title": "登录流明",
-		"welcome": "欢迎使用流明 Llumen",
+		"title": "登录 ichat",
+		"welcome": "欢迎使用 ichat",
 		"description": "简易、开箱即用的 LLM 聊天界面",
 		"username": "账号名称",
 		"password": "密码",
@@ -49,7 +49,7 @@
 		"loading": "登录中"
 	},
 	"chat": {
-		"title": "流明 Llumen",
+		"title": "ichat",
 		"welcome": "Ask anything!",
 		"question": "在此输入问题",
 		"model_mode": {
@@ -76,7 +76,7 @@
 		"research_agent": "研究代理",
 		"calling": "调用中",
 		"default_tool": "默认工具",
-		"hallucination_warning": "流明可能会犯错，请谨慎使用生成信息。",
+		"hallucination_warning": "ichat 可能会犯错，请谨慎使用生成信息。",
 		"confirm": {
 			"title": "离开此页面?",
 			"message": "您有未保存的更改。确定要离开此页面吗?",

@@ -134,7 +134,7 @@ export interface Deep {
 }
 
 /**
- * Enumeration of all possible error types in the Llumen API.
+ * Enumeration of all possible error types in the ichat API.
  *
  * Each variant represents a category of error that can occur during request
  * processing. The frontend uses these to implement error-specific handling
@@ -164,7 +164,7 @@ export enum ErrorKind {
 	MalformedRequest = 'malformed_request',
 	/**
 	 * Unexpected internal server error.
-	 * Indicates a bug in Llumen or an unhandled edge case.
+	 * Indicates a bug in ichat or an unhandled edge case.
 	 * Frontend should show generic error message and suggest reporting.
 	 */
 	Internal = 'internal',

@@ -1,6 +1,6 @@
 {
-  "name": "Llumen",
-  "short_name": "Llumen",
+  "name": "ichat",
+  "short_name": "ichat",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

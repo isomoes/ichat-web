@@ -1,6 +1,6 @@
 # Build Guide
 
-This guide covers how to build Llumen from source for development or production.
+This guide covers how to build ichat from source for development or production.
 
 ## Prerequisites
 
@@ -35,7 +35,7 @@ This runs the backend on `http://127.0.0.1:8001` with development features enabl
 
 ### 2a. External Auth With New API
 
-If you want llumen login and registration to use a separate New API deployment, configure that on the backend only:
+If you want ichat login and registration to use a separate New API deployment, configure that on the backend only:
 
 ```bash
 export NEWAPI_AUTH_BASE="https://newapi.example.com"
@@ -50,8 +50,8 @@ export NEWAPI_AUTH_USER_HEADER="New-Api-User"
 
 Important:
 
-- The browser still calls only llumen at `/api/...`
-- llumen backend calls New API server-to-server
+- The browser still calls only ichat at `/api/...`
+- ichat backend calls New API server-to-server
 - This avoids direct browser-to-New-API CORS requirements
 
 ### 3. Build and Run Together

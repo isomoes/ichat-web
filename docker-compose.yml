@@ -1,6 +1,6 @@
 services:
-  llumen:
-    image: ghcr.io/pinkfuwa/llumen:latest
+  ichat:
+    image: ghcr.io/isomoes/ichat-web:latest
     # build:
     #   context: .
     #   dockerfile: ./package/Dockerfile

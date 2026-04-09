@@ -104,13 +104,13 @@ impl Prompt {
 
     pub fn render_context(
         &self,
-        llumen_related: bool,
+        ichat_related: bool,
         time: &str,
         chat_title: Option<&str>,
     ) -> Result<String> {
         let tmpl = self.env.get_template("context")?;
         Ok(tmpl.render(minijinja::context! {
-            llumen_related,
+            ichat_related,
             time,
             chat_title,
         })?)

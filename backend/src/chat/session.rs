@@ -167,16 +167,16 @@ impl CompletionSession {
         // - Image-only models get context (they take last message)
         // - Gemini compatibility (single system prompt preserved)
         // - Prompt caching is not ruined (system prompt stays clean)
-        let is_llumen_related = self
+        let is_ichat_related = self
             .latest_user_message()
-            .map(|m| m.to_lowercase().contains("llumen"))
+            .map(|m| m.to_lowercase().contains("ichat"))
             .unwrap_or(false);
         let time_str = time::OffsetDateTime::now_utc()
             .format(super::prompt::TIME_FORMAT)
             .unwrap_or_default();
         let context_prompt =
             ctx.prompt
-                .render_context(is_llumen_related, &time_str, self.chat.title.as_deref())?;
+                .render_context(is_ichat_related, &time_str, self.chat.title.as_deref())?;
 
         if !context_prompt.trim().is_empty() {
             // Find the position of the last user message and insert context before it

@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Replace local username/password authentication with New API login and registration while keeping llumen's own database as the source of truth for per-user chat history, files, preferences, and ownership isolation.
+**Goal:** Replace local username/password authentication with New API login and registration while keeping ichat's own database as the source of truth for per-user chat history, files, preferences, and ownership isolation.
 
-**Architecture:** The backend remains the only app the SPA talks to for llumen data. Backend auth routes become an adapter: they call New API's management auth endpoints, resolve the external user identity via `GET /api/user/self`, upsert a local user row keyed by the external user id, then mint llumen's existing local PASETO so all existing owner-scoped chat and file routes continue to work. The frontend keeps the current login-first SPA shape, adds registration, removes local password/admin-user management UX, and continues sending only llumen's local token to llumen routes.
+**Architecture:** The backend remains the only app the SPA talks to for ichat data. Backend auth routes become an adapter: they call New API's management auth endpoints, resolve the external user identity via `GET /api/user/self`, upsert a local user row keyed by the external user id, then mint ichat's existing local PASETO so all existing owner-scoped chat and file routes continue to work. The frontend keeps the current login-first SPA shape, adds registration, removes local password/admin-user management UX, and continues sending only ichat's local token to ichat routes.
 
 **Tech Stack:** Rust, Axum, SeaORM, reqwest, PASETO, SQLite, Svelte 5, TypeScript, pnpm, typeshare
 
@@ -13,16 +13,16 @@
 ## Scope Notes
 
 - This plan assumes New API is the system of record for user credentials.
-- This plan does **not** add tenant/workspace sharing. Each New API user maps to exactly one local llumen user row.
+- This plan does **not** add tenant/workspace sharing. Each New API user maps to exactly one local ichat user row.
 - This plan keeps the existing owner-based history isolation already present in chat/message/file routes. The implementation work is to make auth map the right external identity to the right local owner id every time.
-- This plan intentionally removes or hides local user-creation/password-management features in llumen because they conflict with “user auth uses the API”.
+- This plan intentionally removes or hides local user-creation/password-management features in ichat because they conflict with “user auth uses the API”.
 
 ## Cross-Domain Rule
 
-- Browser traffic must stay same-origin to llumen: SPA -> `llumen /api/...` only.
-- llumen backend performs all New API auth calls server-to-server with `reqwest`.
+- Browser traffic must stay same-origin to ichat: SPA -> `ichat /api/...` only.
+- ichat backend performs all New API auth calls server-to-server with `reqwest`.
 - Do **not** call New API directly from `frontend/src/...`; that would make auth depend on cross-domain browser CORS and expose upstream auth details to the client.
-- llumen CORS only needs to support browser -> llumen development access. It does not need to solve browser -> New API.
+- ichat CORS only needs to support browser -> ichat development access. It does not need to solve browser -> New API.
 
 ## External Contract To Implement
 
@@ -36,7 +36,7 @@ Because the public docs are sparse about response bodies and cookies, implementa
 1. Call New API login/register.
 2. Reuse the returned cookies and/or bearer token when calling `GET /api/user/self`.
 3. Upsert local user by external id.
-4. Mint local llumen token from the local user id.
+4. Mint local ichat token from the local user id.
 
 The browser must never see or call the upstream New API base URL during this flow.
 
@@ -57,7 +57,7 @@ The browser must never see or call the upstream New API base URL during this flo
 - Modify: `backend/entity/src/entities/user.rs`
   Responsibility: represent the new `external_user_id` column in SeaORM.
 - Modify: `backend/src/main.rs`
-  Responsibility: load New API auth configuration, inject the adapter into `AppState`, and keep browser CORS scoped only to llumen.
+  Responsibility: load New API auth configuration, inject the adapter into `AppState`, and keep browser CORS scoped only to ichat.
 - Modify: `backend/src/routes/auth/login.rs`
   Responsibility: replace local password verification with New API login + local token exchange.
 - Create: `backend/src/routes/auth/register.rs`
@@ -88,7 +88,7 @@ The browser must never see or call the upstream New API base URL during this flo
 - Modify: `frontend/src/routes/login/+page.svelte`
   Responsibility: keep login UI, add navigation to register, and adapt any error messaging to backend adapter errors.
 - Create: `frontend/src/routes/register/+page.svelte`
-  Responsibility: registration screen that posts only to llumen backend and never to the upstream New API domain.
+  Responsibility: registration screen that posts only to ichat backend and never to the upstream New API domain.
 - Modify: `frontend/src/routes/+page.svelte`
   Responsibility: route unauthenticated users to either login or register entry points cleanly.
 - Modify: `frontend/src/lib/components/setting/tabs/account/AccountPassword.svelte`
@@ -107,7 +107,7 @@ The browser must never see or call the upstream New API base URL during this flo
 - Modify: `docs/user/config/environment.mdx`
   Responsibility: document new env vars for New API auth integration and remove the misleading default-password guidance.
 - Modify: `BUILD.md`
-  Responsibility: add any setup steps needed to run llumen against a New API instance during development.
+  Responsibility: add any setup steps needed to run ichat against a New API instance during development.
 
 ## Chunk 1: Backend Identity Mapping And Auth Adapter
 
@@ -145,7 +145,7 @@ async fn user_row_can_be_selected_by_external_user_id() {
 Run: `cargo test --manifest-path backend/Cargo.toml --test newapi_auth user_row_can_be_selected_by_external_user_id -- --nocapture`
 Expected: FAIL because `ExternalUserId` column and helper setup do not exist yet.
 
-- [ ] **Step 3: Write the minimal schema change**
+- [x] **Step 3: Write the minimal schema change**
 
 ```rust
 manager
@@ -272,7 +272,7 @@ Implementation notes:
 - Copy the observed status codes, cookies, headers, and id field shape into comments or fixture builders inside `backend/tests/newapi_auth.rs`.
 - Update `BUILD.md` with one short developer note explaining that these capture commands are the source of truth when upstream docs and runtime behavior differ.
 
-- [ ] **Step 4: Write minimal implementation**
+- [x] **Step 4: Write minimal implementation**
 
 ```rust
 pub mod config;
@@ -340,7 +340,7 @@ git add backend/src/lib.rs backend/src/utils/mod.rs backend/src/utils/newapi_aut
 git commit -m "feat: add new api auth client"
 ```
 
-### Task 3: Rewrite backend login to exchange external auth for a local llumen token
+### Task 3: Rewrite backend login to exchange external auth for a local ichat token
 
 **Files:**
 - Modify: `backend/src/routes/auth/login.rs`
@@ -353,7 +353,7 @@ git commit -m "feat: add new api auth client"
 
 ```rust
 #[tokio::test]
-async fn login_upserts_local_user_and_returns_llumen_token() {
+async fn login_upserts_local_user_and_returns_ichat_token() {
     let app = TestApp::new().await.with_upstream_user(42, "alice");
 
     let response = app.login("alice", "secret").await;
@@ -402,10 +402,10 @@ async fn renew_still_works_for_token_minted_from_external_login() {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `cargo test --manifest-path backend/Cargo.toml --test newapi_auth login_upserts_local_user_and_returns_llumen_token -- --nocapture`
+Run: `cargo test --manifest-path backend/Cargo.toml --test newapi_auth login_upserts_local_user_and_returns_ichat_token -- --nocapture`
 Expected: FAIL because login still reads local password hashes.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```rust
 let identity = app.newapi_auth.login(&req.username, &req.password).await?;
@@ -414,18 +414,18 @@ let Token { token, exp } = helper::new_token(&app, local_user.id)?;
 Ok(Json(LoginResp { token, exp }))
 ```
 
-- [ ] **Step 4: Implement the local upsert carefully**
+- [x] **Step 4: Implement the local upsert carefully**
 
 Implementation notes:
 - Upsert key must be `external_user_id`, not username.
 - On repeat login, update local `name` if the upstream username changed.
 - Do **not** overwrite local `preference` during login.
-- Keep using local PASETO for llumen routes so the rest of the app remains unchanged.
+- Keep using local PASETO for ichat routes so the rest of the app remains unchanged.
 - Map upstream auth failures to `ErrorKind::LoginFail`, not `Internal`.
 
 - [ ] **Step 5: Run the focused test again**
 
-Run: `cargo test --manifest-path backend/Cargo.toml --test newapi_auth login_upserts_local_user_and_returns_llumen_token -- --nocapture`
+Run: `cargo test --manifest-path backend/Cargo.toml --test newapi_auth login_upserts_local_user_and_returns_ichat_token -- --nocapture`
 Expected: PASS.
 
 Run: `cargo test --manifest-path backend/Cargo.toml --test newapi_auth different_external_users_create_distinct_local_users_even_if_names_change -- --nocapture`
@@ -455,7 +455,7 @@ git commit -m "feat: exchange external login for local session token"
 
 ```rust
 #[tokio::test]
-async fn register_creates_external_user_then_returns_llumen_token() {
+async fn register_creates_external_user_then_returns_ichat_token() {
     let app = TestApp::new().await.with_registering_upstream_user(77, "bob");
 
     let response = app.register("bob", "secret", Some("bob@example.com")).await;
@@ -505,10 +505,10 @@ async fn separately_registered_users_get_isolated_local_history() {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `cargo test --manifest-path backend/Cargo.toml --test newapi_auth register_creates_external_user_then_returns_llumen_token -- --nocapture`
+Run: `cargo test --manifest-path backend/Cargo.toml --test newapi_auth register_creates_external_user_then_returns_ichat_token -- --nocapture`
 Expected: FAIL because `/api/auth/register` does not exist.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```rust
 #[derive(Debug, Deserialize)]
@@ -530,13 +530,13 @@ pub struct RegisterResp {
 - [ ] **Step 4: Match New API’s real validation contract**
 
 Implementation notes:
-- Keep llumen backend validation minimal: non-empty username/password, optional email format sanity check only if the current frontend already validates email the same way.
+- Keep ichat backend validation minimal: non-empty username/password, optional email format sanity check only if the current frontend already validates email the same way.
 - Pass `email`, `verification_code`, and `aff_code` through unchanged because they are documented by New API even if the current deployment leaves them optional.
 - Reuse the same `upsert_local_user` helper as login.
 
 - [ ] **Step 5: Run the focused test again**
 
-Run: `cargo test --manifest-path backend/Cargo.toml --test newapi_auth register_creates_external_user_then_returns_llumen_token -- --nocapture`
+Run: `cargo test --manifest-path backend/Cargo.toml --test newapi_auth register_creates_external_user_then_returns_ichat_token -- --nocapture`
 Expected: PASS.
 
 Run: `cargo test --manifest-path backend/Cargo.toml --test newapi_auth register_supports_cookie_and_bearer_follow_up_identity_lookup -- --nocapture`
@@ -568,7 +568,7 @@ git commit -m "feat: add new api-backed registration"
 
 ## Chunk 2: Frontend Auth UX, Cleanup, And Verification
 
-### Task 5: Add SPA registration and keep login flow local to llumen backend
+### Task 5: Add SPA registration and keep login flow local to ichat backend
 
 **Files:**
 - Modify: `frontend/src/lib/api/auth.ts`
@@ -582,7 +582,7 @@ git commit -m "feat: add new api-backed registration"
 - [ ] **Step 1: Write the failing frontend auth tests**
 
 ```ts
-it('stores the returned llumen token after registration', async () => {
+it('stores the returned ichat token after registration', async () => {
 	mockApi('auth/register', { token: 'abc', exp: '2099-01-01T00:00:00Z' });
 	const mutation = Register();
 
@@ -636,12 +636,12 @@ it('shows login and register entry points on the landing page when logged out', 
 Run: `pnpm --dir frontend test frontend/src/lib/api/auth.test.ts`
 Expected: FAIL because `Register()` is not implemented and `/register` is still redirected to `/login`.
 
-- [ ] **Step 3: Regenerate backend-derived frontend types**
+- [x] **Step 3: Regenerate backend-derived frontend types**
 
 Run: `cargo run --package xtask --manifest-path backend/Cargo.toml -- gen-ts`
 Expected: PASS and `frontend/src/lib/api/types.ts` now includes register request/response shapes plus `external_auth` on `UserReadResp`.
 
-- [ ] **Step 4: Write minimal implementation**
+- [x] **Step 4: Write minimal implementation**
 
 ```ts
 export function Register(): MutationResult<RegisterReq, RegisterResp> {
@@ -656,8 +656,8 @@ export function Register(): MutationResult<RegisterReq, RegisterResp> {
 
 Implementation notes:
 - Reuse the current login page visual language.
-- Post only to llumen backend, never directly from browser to New API.
-- Keep `apiBase` pointed at llumen only. Do not add any `NEWAPI_AUTH_BASE` usage in frontend code.
+- Post only to ichat backend, never directly from browser to New API.
+- Keep `apiBase` pointed at ichat only. Do not add any `NEWAPI_AUTH_BASE` usage in frontend code.
 - Add fields in the first pass:
   - username
   - password
@@ -675,7 +675,7 @@ Implementation notes:
 Run: `pnpm --dir frontend test frontend/src/lib/api/auth.test.ts`
 Expected: PASS.
 
-Expected coverage includes: registration submits to llumen `auth/register`, not to the upstream New API host.
+Expected coverage includes: registration submits to ichat `auth/register`, not to the upstream New API host.
 
 Run: `pnpm --dir frontend check`
 Expected: PASS.
@@ -756,7 +756,7 @@ Expected: FAIL because the local user-management routes still work.
 Run: `pnpm --dir frontend test`
 Expected: FAIL because admin/local-password UI still exists.
 
-- [ ] **Step 3: Write the minimal implementation**
+- [x] **Step 3: Write the minimal implementation**
 
 ```rust
 if app.newapi_auth.is_enabled() && password.is_some() {
@@ -890,7 +890,7 @@ Expected: PASS.
 Run: `cargo test --manifest-path backend/Cargo.toml --test newapi_auth register_then_later_login_reuses_the_same_local_history -- --nocapture`
 Expected: PASS.
 
-- [ ] **Step 3: Document the new setup**
+- [x] **Step 3: Document the new setup**
 
 Add to `docs/user/config/environment.mdx`:
 
@@ -905,14 +905,14 @@ Replace the old “default password” guidance with:
 ```mdx
 <Accordion title="External account management">
   - User login and registration are delegated to your New API instance.
-  - Llumen stores only local conversation history, preferences, and file ownership.
+  - ichat stores only local conversation history, preferences, and file ownership.
   - Password resets and account recovery happen in your New API deployment.
 </Accordion>
 ```
 
-- [ ] **Step 4: Add development workflow notes**
+- [x] **Step 4: Add development workflow notes**
 
-Add to `BUILD.md` a short section showing how to run llumen with a New API instance available, including required env vars and the note that frontend users authenticate through llumen backend, not directly to New API.
+Add to `BUILD.md` a short section showing how to run ichat with a New API instance available, including required env vars and the note that frontend users authenticate through ichat backend, not directly to New API.
 
 - [ ] **Step 5: Run full verification**
 
@@ -949,7 +949,7 @@ git commit -m "docs: describe external auth configuration"
 - Keep the New API integration behind a small adapter. Do not scatter upstream URL building across route handlers.
 - Do not change the existing owner checks in chat/message/file routes unless tests prove a bug.
 - Prefer a single new backend test file with focused integration tests over many tiny files.
-- If New API returns richer fields from `/api/user/self` than this plan assumed, persist only what llumen actually needs now: stable external id and display name.
-- If you discover the upstream login endpoint is session-cookie-only, keep that detail entirely inside `newapi_auth.rs`; the frontend should still only receive llumen's local token.
+- If New API returns richer fields from `/api/user/self` than this plan assumed, persist only what ichat actually needs now: stable external id and display name.
+- If you discover the upstream login endpoint is session-cookie-only, keep that detail entirely inside `newapi_auth.rs`; the frontend should still only receive ichat's local token.
 
 Plan complete and saved to `docs/superpowers/plans/2026-04-08-newapi-external-auth-multi-user.md`. Ready to execute?

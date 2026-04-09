@@ -44,9 +44,9 @@ tests:
       - type: contains
         value: "Paris"
 
-  - description: "Llumen project info - includes repo context"
+  - description: "ichat project info - includes repo context"
     vars:
-      user_prompt: "What's llumen?"
+      user_prompt: "What's ichat?"
     assert:
       - type: contains
         value: "chat"
@@ -83,7 +83,7 @@ tests:
       locale: "zh-tw"
     assert:
       - type: contains
-        value: "llumen"
+        value: "ichat"
 
   - description: "Language - Simplified Chinese responds in zh-cn"
     vars:
@@ -91,7 +91,7 @@ tests:
       locale: "zh-cn"
     assert:
       - type: contains
-        value: "llumen"
+        value: "ichat"
 
   # Tests for simplified task workflows
   - description: "Advice workflow - empathetic response"
@@ -134,16 +134,16 @@ tests:
         value: "\\("
 
   # Tests for context injection
-  - description: "Context - llumen info included when mentioned"
+  - description: "Context - ichat info included when mentioned"
     vars:
-      user_prompt: "Tell me about llumen and its performance"
+      user_prompt: "Tell me about ichat and its performance"
     assert:
       - type: contains
         value: "lightweight"
 
   - description: "Context - repository URL available"
     vars:
-      user_prompt: "Where can I find the llumen source code?"
+      user_prompt: "Where can I find the ichat source code?"
     assert:
       - type: contains
         value: "github"

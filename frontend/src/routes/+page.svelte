@@ -8,9 +8,9 @@
 </script>
 
 <div class="flex h-screen flex-col items-center justify-center bg-login-bg">
-	<h1 class="mb-4 text-center text-3xl md:text-5xl">Welcome to Llumen</h1>
+	<h1 class="mb-4 text-center text-3xl md:text-5xl">Welcome to ichat</h1>
 	<p class="mb-6 text-center text-lg text-text/80">
-		Sign in through llumen to keep chat history local.
+		Sign in through ichat to keep chat history local.
 	</p>
 	{#if $token}
 		<a href="/chat/new" class="text-2xl">Go to chat</a>

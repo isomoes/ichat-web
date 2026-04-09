@@ -1,9 +1,9 @@
-# Contributing to Llumen
+# Contributing to ichat
 
 > [!TIP]
-> Llumen is small project, maybe you should contact maintainer directly.
+> ichat is small project, maybe you should contact maintainer directly.
 
-Thank you for your interest in contributing to Llumen! We welcome contributions from everyone in the form of suggestions, bug reports, pull requests, and feedback. This document provides guidance to help you get started.
+Thank you for your interest in contributing to ichat! We welcome contributions from everyone in the form of suggestions, bug reports, pull requests, and feedback. This document provides guidance to help you get started.
 
 ## Submitting Bug Reports and Feature Requests
 
@@ -11,7 +11,7 @@ If you encounter a bug or have a feature request, please open an issue in the ma
 
 [Minimal, Complete, and Verifiable example]: https://stackoverflow.com/help/mcve
 
-When making a feature request, please clearly describe the problem you want to solve, any ideas for how Llumen could support solving that problem, possible alternatives, and any disadvantages.
+When making a feature request, please clearly describe the problem you want to solve, any ideas for how ichat could support solving that problem, possible alternatives, and any disadvantages.
 
 ## Running the Test Suite
 
@@ -52,10 +52,10 @@ If any tests fail, please address them before submitting your pull request.
 
 ## Conduct
 
-In all Llumen-related forums, we follow the [Rust Code of Conduct]. For escalation or moderation issues, please contact the project maintainers directly.
+In all ichat-related forums, we follow the [Rust Code of Conduct]. For escalation or moderation issues, please contact the project maintainers directly.
 
 [Rust Code of Conduct]: https://www.rust-lang.org/policies/code-of-conduct
 
 ---
 
-Thank you for helping make Llumen better!
+Thank you for helping make ichat better!

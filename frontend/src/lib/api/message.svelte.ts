@@ -44,7 +44,7 @@ let version = $state(-1);
 // cursor are used to check small different between versions
 //
 // For example:
-// User: What's llumen -> version 1
+// User: What's ichat -> version 1
 // Assistant: -> version 2 index 0 offset 0
 // <thinking>I have to<thinking> -> version 2 index 0 offset 8
 // **Quick Answer:** -> version 2 index 1 offset 17

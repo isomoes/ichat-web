@@ -4,7 +4,7 @@ Privacy-focused LLM chat web-application optimized for minimal hardware (Raspber
 
 ## Architecture
 
-llumen follows mono repo file structure:
+ichat follows mono repo file structure:
 - `./frontend`: Svelte 5 (static-adapter) frontend
 - `./backend`: Axum backend
 - `./agent`: Prompt and regression prompt test

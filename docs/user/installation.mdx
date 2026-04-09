@@ -1,6 +1,6 @@
 ---
 title: "Installation"
-description: "Get llumen running in 30 seconds"
+description: "Get ichat running in 30 seconds"
 ---
 
 ## Quick Start
@@ -27,7 +27,7 @@ docker run -it --rm \
   -e API_KEY="<YOUR_OPENROUTER_KEY>" \
   -p 80:80 \
   -v "$(pwd)/data:/data" \
-  ghcr.io/pinkfuwa/llumen:latest
+  ghcr.io/isomoes/ichat-web:latest
 ```
 
 <Note>
@@ -36,7 +36,7 @@ docker run -it --rm \
 
 ### What This Does
 
-- Downloads the latest llumen image (~17MB)
+- Downloads the latest ichat image (~17MB)
 - Starts the server on port 80
 - Creates a `data` folder for persistent storage
 - Sets your API key for LLM access
@@ -61,12 +61,12 @@ To keep your conversations and settings:
 
 ```bash
 docker run -d \
-  --name llumen \
+  --name ichat \
   -e API_KEY="your-key-here" \
   -p 80:80 \
-  -v ./llumen-data:/data \
+  -v ./ichat-data:/data \
   --restart unless-stopped \
-  ghcr.io/pinkfuwa/llumen:latest
+  ghcr.io/isomoes/ichat-web:latest
 ```
 
 ### Using Nightly Builds
@@ -77,7 +77,7 @@ For the latest features (may be unstable):
 docker run -p 80:80 \
   -e API_KEY="your-key-here" \
   -v ./data:/data \
-  ghcr.io/pinkfuwa/llumen:nightly
+  ghcr.io/isomoes/ichat-web:nightly
 ```
 
 ## Native Binary
@@ -90,20 +90,20 @@ Get the latest release for your platform:
 
 **Linux (x86_64):**
 ```bash
-wget https://github.com/pinkfuwa/llumen/releases/download/latest/llumen-x86_64-unknown-linux-gnu
-chmod +x llumen-x86_64-unknown-linux-gnu
+wget https://github.com/isomoes/ichat-web/releases/download/latest/ichat-x86_64-unknown-linux-gnu
+chmod +x ichat-x86_64-unknown-linux-gnu
 ```
 
 **Linux (ARM64/aarch64):**
 ```bash
-wget https://github.com/pinkfuwa/llumen/releases/download/latest/llumen-aarch64-unknown-linux-gnu
-chmod +x llumen-aarch64-unknown-linux-gnu
+wget https://github.com/isomoes/ichat-web/releases/download/latest/ichat-aarch64-unknown-linux-gnu
+chmod +x ichat-aarch64-unknown-linux-gnu
 ```
 
 **Windows:**
 ```bash
 # Download from GitHub Releases page
-https://github.com/pinkfuwa/llumen/releases/download/latest/llumen-x86_64-pc-windows-msvc.exe
+https://github.com/isomoes/ichat-web/releases/download/latest/ichat-x86_64-pc-windows-msvc.exe
 ```
 
 ### Run
@@ -112,8 +112,8 @@ https://github.com/pinkfuwa/llumen/releases/download/latest/llumen-x86_64-pc-win
 # Set API key
 export API_KEY="your-openrouter-key"
 
-# Run llumen
-./llumen-x86_64-unknown-linux-gnu
+# Run ichat
+./ichat-x86_64-unknown-linux-gnu
 ```
 
 ## Platform-Specific Notes
@@ -123,23 +123,23 @@ export API_KEY="your-openrouter-key"
   **Installation:**
   ```bash
   # Use ARM64 binary
-  wget https://github.com/pinkfuwa/llumen/releases/download/latest/llumen-aarch64-unknown-linux-gnu
-  chmod +x llumen-aarch64-unknown-linux-gnu
-  ./llumen-aarch64-unknown-linux-gnu
+  wget https://github.com/isomoes/ichat-web/releases/download/latest/ichat-aarch64-unknown-linux-gnu
+  chmod +x ichat-aarch64-unknown-linux-gnu
+  ./ichat-aarch64-unknown-linux-gnu
   ```
 </Accordion>
 
 <Accordion title="Windows">
-  **Download:** Get the `.exe` from [releases](https://github.com/pinkfuwa/llumen/releases)
+  **Download:** Get the `.exe` from [releases](https://github.com/isomoes/ichat-web/releases)
   
   **Run:**
   ```powershell
   # PowerShell
   $env:API_KEY="your-key"
-  .\llumen.exe
+  .\ichat.exe
   ```
   
-  **Firewall:** You may need to allow llumen through Windows Firewall
+  **Firewall:** You may need to allow ichat through Windows Firewall
 </Accordion>
 
 ## Troubleshooting
@@ -147,7 +147,7 @@ export API_KEY="your-openrouter-key"
 <Accordion title="Port 80 already in use">
   Use a different port:
   ```bash
-  docker run -p 8080:80 ... ghcr.io/pinkfuwa/llumen:latest
+  docker run -p 8080:80 ... ghcr.io/isomoes/ichat-web:latest
   ```
   Access at http://localhost:8080
 </Accordion>
@@ -156,7 +156,7 @@ export API_KEY="your-openrouter-key"
     Docker build has default port 80.
 
     Other deployment option has default port 3000, and bind only to local interface
-    (You cannot access llumen from other device).
+    (You cannot access ichat from other device).
 </Accordion>
 
 <Accordion title="Can't connect from network">

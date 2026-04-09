@@ -3,15 +3,15 @@ import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 
 const config: Config = {
-  title: "Llumen",
+  title: "ichat",
   tagline: "A powerful LLM chat application",
   favicon: "img/favicon.ico",
 
-  url: "https://pinkfuwa.github.io",
-  baseUrl: "/llumen",
+  url: "https://isomoes.github.io",
+  baseUrl: "/ichat-web/",
 
-  organizationName: "pinkfuwa",
-  projectName: "llumen",
+  organizationName: "isomoes",
+  projectName: "ichat-web",
 
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
@@ -40,7 +40,7 @@ const config: Config = {
           path: ".",
           routeBasePath: "/",
           sidebarPath: "./sidebars.ts",
-          editUrl: "https://github.com/pinkfuwa/llumen/tree/main/docs/",
+          editUrl: "https://github.com/isomoes/ichat-web/tree/main/docs/",
           exclude: [
             "**/_*.{js,jsx,ts,tsx,md,mdx}",
             "**/_*/**",
@@ -68,9 +68,9 @@ const config: Config = {
 
   themeConfig: {
     navbar: {
-      title: "Llumen",
+      title: "ichat",
       logo: {
-        alt: "Llumen Logo",
+        alt: "ichat Logo",
         src: "img/logo.svg",
       },
       items: [
@@ -88,11 +88,11 @@ const config: Config = {
         },
         {
           label: "Download",
-          href: "https://github.com/pinkfuwa/llumen/releases",
+          href: "https://github.com/isomoes/ichat-web/releases",
           position: "right",
         },
         {
-          href: "https://github.com/pinkfuwa/llumen",
+          href: "https://github.com/isomoes/ichat-web",
           position: "right",
           className: "header-github-link",
           "aria-label": "GitHub repository",
@@ -120,11 +120,11 @@ const config: Config = {
           items: [
             {
               label: "GitHub Discussions",
-              href: "https://github.com/pinkfuwa/llumen/discussions",
+              href: "https://github.com/isomoes/ichat-web/discussions",
             },
             {
               label: "Issues",
-              href: "https://github.com/pinkfuwa/llumen/issues",
+              href: "https://github.com/isomoes/ichat-web/issues",
             },
           ],
         },
@@ -133,16 +133,16 @@ const config: Config = {
           items: [
             {
               label: "GitHub",
-              href: "https://github.com/pinkfuwa/llumen",
+              href: "https://github.com/isomoes/ichat-web",
             },
             {
               label: "Releases",
-              href: "https://github.com/pinkfuwa/llumen/releases",
+              href: "https://github.com/isomoes/ichat-web/releases",
             },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} Llumen. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} ichat. Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,

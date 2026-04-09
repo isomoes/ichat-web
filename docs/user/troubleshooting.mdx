@@ -5,11 +5,11 @@ description: "Solutions to common problems"
 
 ## Connection Issues
 
-<Accordion title="Can't access llumen from browser">
+<Accordion title="Can't access ichat from browser">
   **Symptoms:** Connection refused, timeout
 
   **Solutions:**
-  1. Check if llumen is running:
+  1. Check if ichat is running:
      ```bash
      docker ps  # or
      curl http://localhost/api/health
@@ -17,7 +17,7 @@ description: "Solutions to common problems"
   
   2. Verify port binding:
      ```bash
-     docker logs llumen
+     docker logs ichat
      # Should see: "Listening on 0.0.0.0:80"
      ```
   
@@ -28,7 +28,7 @@ description: "Solutions to common problems"
   
   4. Try different port:
      ```bash
-     docker run -p 8080:80 ... ghcr.io/pinkfuwa/llumen:latest
+     docker run -p 8080:80 ... ghcr.io/isomoes/ichat-web:latest
      ```
 </Accordion>
 
@@ -43,7 +43,7 @@ description: "Solutions to common problems"
   
   2. Use different port:
      ```bash
-     docker run -p 8080:80 ... ghcr.io/pinkfuwa/llumen:latest
+     docker run -p 8080:80 ... ghcr.io/isomoes/ichat-web:latest
      ```
      Access at http://localhost:8080
 </Accordion>
@@ -56,7 +56,7 @@ description: "Solutions to common problems"
   **Solutions:**
   1. Verify key is set:
      ```bash
-     docker exec llumen env | grep API_KEY
+     docker exec ichat env | grep API_KEY
      ```
   
   2. Check key format:
@@ -67,7 +67,7 @@ description: "Solutions to common problems"
   
   4. Restart after setting key:
      ```bash
-     docker restart llumen
+     docker restart ichat
      ```
 </Accordion>
 
@@ -144,12 +144,12 @@ description: "Solutions to common problems"
   **Solutions:**
   1. Verify volume mount:
      ```bash
-     docker inspect llumen | grep -A 10 Mounts
+     docker inspect ichat | grep -A 10 Mounts
      ```
   
   2. Check permissions:
      ```bash
-     ls -la ./llumen-data
+     ls -la ./ichat-data
      ```
   
   3. Ensure DATA_PATH set:
@@ -170,7 +170,7 @@ description: "Solutions to common problems"
   
   4. Review container logs:
      ```bash
-     docker logs llumen
+     docker logs ichat
      ```
 </Accordion>
 
@@ -180,14 +180,14 @@ description: "Solutions to common problems"
   **Solutions:**
   1. Set memory limit:
      ```bash
-     docker run --memory="256m" ... ghcr.io/pinkfuwa/llumen:latest
+     docker run --memory="256m" ... ghcr.io/isomoes/ichat-web:latest
      ```
   
   2. Clear conversation history
   
   3. Restart container:
      ```bash
-     docker restart llumen
+     docker restart ichat
      ```
 </Accordion>
 
@@ -201,7 +201,7 @@ description: "Solutions to common problems"
   
   4. Check network latency:
      ```bash
-     ping your-llumen-server
+     ping your-ichat-server
      ```
 </Accordion>
 
@@ -211,17 +211,17 @@ description: "Solutions to common problems"
 
 ```bash
 # Docker
-docker logs llumen
-docker logs -f llumen  # Follow
+docker logs ichat
+docker logs -f ichat  # Follow
 
 # Native
-journalctl -u llumen -f
+journalctl -u ichat -f
 ```
 
 ### Collect Debug Info
 
 When reporting issues, include:
-- llumen version
+- ichat version
 - Installation method (Docker/native)
 - Operating system
 - Error messages from logs
@@ -229,8 +229,8 @@ When reporting issues, include:
 
 ### Community Support
 
-- [GitHub Discussions](https://github.com/pinkfuwa/llumen/discussions)
-- [Issue Tracker](https://github.com/pinkfuwa/llumen/issues)
+- [GitHub Discussions](https://github.com/isomoes/ichat-web/discussions)
+- [Issue Tracker](https://github.com/isomoes/ichat-web/issues)
 - Include debug info from above
 
 ### Common Error Codes
@@ -246,6 +246,6 @@ When reporting issues, include:
 
 ## Still Having Issues?
 
-<Card title="Create an Issue" href="https://github.com/pinkfuwa/llumen/issues/new">
+<Card title="Create an Issue" href="https://github.com/isomoes/ichat-web/issues/new">
   Report bugs or request help on GitHub
 </Card>

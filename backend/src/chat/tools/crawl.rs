@@ -13,7 +13,7 @@ impl CrawlTool {
         Self {
             client: reqwest::Client::builder()
                 .user_agent(
-                    "Mozilla/5.0 (compatible; LLumen/1.0; +https://github.com/pinkfuwa/llumen)",
+                    "Mozilla/5.0 (compatible; ichat/1.0; +https://github.com/isomoes/ichat-web)",
                 )
                 .timeout(Duration::from_secs(30))
                 .pool_idle_timeout(Duration::from_secs(30))

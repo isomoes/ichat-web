@@ -1,5 +1,5 @@
 // This module defines the error types and result type aliases used throughout
-// the Llumen backend. It follows a pattern where errors are converted to JSON
+// the ichat backend. It follows a pattern where errors are converted to JSON
 // responses via the WithKind trait, ensuring consistent error formatting for
 // the frontend.
 //
@@ -44,7 +44,7 @@ pub struct Error {
     pub reason: String,
 }
 
-/// Enumeration of all possible error types in the Llumen API.
+/// Enumeration of all possible error types in the ichat API.
 ///
 /// Each variant represents a category of error that can occur during request
 /// processing. The frontend uses these to implement error-specific handling
@@ -72,7 +72,7 @@ pub enum ErrorKind {
     MalformedRequest,
 
     /// Unexpected internal server error.
-    /// Indicates a bug in Llumen or an unhandled edge case.
+    /// Indicates a bug in ichat or an unhandled edge case.
     /// Frontend should show generic error message and suggest reporting.
     Internal,
 

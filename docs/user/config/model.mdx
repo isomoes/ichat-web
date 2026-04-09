@@ -5,7 +5,7 @@ description: "Model settings and capabilities"
 
 ## Overview
 
-Llumen allows you to configure individual models with specific capabilities and parameters. This enables fine-tuned control over how each AI model behaves.
+ichat allows you to configure individual models with specific capabilities and parameters. This enables fine-tuned control over how each AI model behaves.
 
 ## Configuration Format
 
@@ -52,7 +52,7 @@ Configure what features the model supports, image generation are always auto-det
 
 <Note>
 You don't need this if you are using openrouter.
-Openrouter API allow llumen to detect it for you.
+Openrouter API allow ichat to detect it for you.
 </Note>
 
 ### Input/Upload
@@ -63,7 +63,7 @@ Set `image`, `audio` to true to override auto-detection
 
 - When set to true: deep research mode will be more accurate. Eliminate error like `"Here is research..." is not a valid plan`. 
 - When set to false: deep research mode will retry once if error.
-- When not set: Llumen will guess its support
+- When not set: ichat will guess its support
 
 ### OCR Engine
 
@@ -82,7 +82,7 @@ All options are case-insensitive. You can use any naming convention:
 
 - When set to true: search/deep research mode will be enable. 
 - When set to false: normal mode only.
-- When not set: Llumen will guess its support
+- When not set: ichat will guess its support
 
 ### Reasoning
 
@@ -114,10 +114,10 @@ All string values are case-insensitive: `"Low"`, `"LOW"`, `"low"` all work.
 - When set to `"auto"`: Use the model's default reasoning behavior
 - When set to `true`: Enable reasoning with default effort
 - When set to `false`: Disable reasoning
-- When not set: Llumen will guess its support, enable if supported
+- When not set: ichat will guess its support, enable if supported
 
 <Note>
-Llumen support interleaved thinking(If model support it)
+ichat support interleaved thinking(If model support it)
 </Note>
 
 ## Model Parameters
@@ -183,11 +183,11 @@ Reduces repetition in responses:
 - **1.2-1.3** - Moderate penalty
 - **1.5+** - Strong penalty (may affect quality)
 
-## Configuring Models in Llumen
+## Configuring Models in ichat
 
 ### Via Web Interface
 
-1. Log in to llumen
+1. Log in to ichat
 2. Go to **Settings** -> **Openrouter**
 3. Add or edit model configurations
 4. Save changes

@@ -9,7 +9,7 @@ BACKEND_DIR := backend
 
 help:
 	@printf '%s\n' \
-		'Llumen build targets:' \
+		'ichat build targets:' \
 		'  make install              Install frontend dependencies' \
 		'  make dev                  Run backend with dev features' \
 		'  make dev-build            Build frontend, then run backend' \

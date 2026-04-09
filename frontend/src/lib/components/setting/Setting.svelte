@@ -76,7 +76,7 @@
 					<div class="flex flex-col space-y-2">
 						<a
 							class="rounded px-3 py-2 text-left duration-150 hover:bg-primary hover:text-text-hover"
-							href="https://github.com/pinkfuwa/llumen"
+							href="https://github.com/isomoes/ichat-web"
 							target="_blank"
 						>
 							<Star class="inline-block h-5 w-5 md:mr-2" />

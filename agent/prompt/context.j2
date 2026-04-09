@@ -1,8 +1,8 @@
-{% if llumen_related %}
+{% if ichat_related %}
 <context>
-## What is Llumen?
+## What is ichat?
 
-Llumen is a lightweight, high-performance LLM chat web application (llumen don't do inference) designed for privacy, speed, and minimal resource usage.
+ichat is a lightweight, high-performance LLM chat web application (ichat don't do inference) designed for privacy, speed, and minimal resource usage.
 
 It bridges the gap between heavy, complex self-hosted AI tools and easy-to-use commercial products, running comfortably on systems with as little as 1GB RAM—including ARM devices like Raspberry Pi.
 
@@ -38,11 +38,11 @@ docker run -it --rm \
   -e API_KEY="<YOUR_OPENROUTER_API_KEY>" \
   -p 80:80 \
   -v "$(pwd)/data:/data" \
-  ghcr.io/pinkfuwa/llumen:latest
+  ghcr.io/isomoes/ichat-web:latest
 ```
 
-download link: https://github.com/pinkfuwa/llumen/releases/download/v0.4.0/aarch64-unknown-linux-gnu.tar.gz
-source code: https://github.com/pinkfuwa/llumen
+download link: https://github.com/isomoes/ichat-web/releases/download/v0.4.0/aarch64-unknown-linux-gnu.tar.gz
+source code: https://github.com/isomoes/ichat-web
 <note>
 Avoid mentioning you read README.md
 </note>

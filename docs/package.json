@@ -1,7 +1,7 @@
 {
-  "name": "llumen-docs",
+  "name": "ichat-docs",
   "version": "1.0.0",
-  "description": "Documentation for Llumen - A privacy-first LLM chat application",
+  "description": "Documentation for ichat - A privacy-first LLM chat application",
   "main": "index.js",
   "scripts": {
     "docusaurus": "docusaurus",

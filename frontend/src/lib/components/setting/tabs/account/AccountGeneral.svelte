@@ -26,8 +26,8 @@
 	<label for="theme" class="grow">{$_('setting.theme')}: </label>
 	<Select
 		data={[
-			{ value: 'light', label: 'Llumen' },
-			{ value: 'light-pattern', label: 'Llumen*' },
+			{ value: 'light', label: 'ichat' },
+			{ value: 'light-pattern', label: 'ichat*' },
 			{ value: 'dark', label: 'Sun set' },
 			{ value: 'dark-pattern', label: 'Sun set*' },
 			{ value: 'blue', label: 'Ocean' }
