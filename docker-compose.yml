@@ -6,8 +6,9 @@ services:
     #   dockerfile: ./package/Dockerfile
     restart: on-failure:3
     environment:
-      - "NEWAPI_AUTH_BASE=https://aiapi.xxxx.top/"
-      - "API_BASE=https://aiapi.xxxx.top"
+      - "API_KEY="
+      - "NEWAPI_AUTH_BASE=https://aiapi.xjh2000.top/"
+      - "API_BASE=https://aiapi.xjh2000.top"
     volumes:
       - "./data:/data"
     ports:
