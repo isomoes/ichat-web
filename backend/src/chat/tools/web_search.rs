@@ -4,7 +4,7 @@ use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::Semaphore;
 
-/// Web search tool for searching the web using DuckDuckGo API
+/// Web search tool for searching the web using Bing HTML results
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WebSearchResult {
     pub title: String,
@@ -12,7 +12,7 @@ pub struct WebSearchResult {
     pub description: String,
 }
 
-/// Web search tool using DuckDuckGo API
+/// Web search tool using Bing search results pages
 pub struct WebSearchTool {
     client: reqwest::Client,
     semaphore: Arc<Semaphore>,
@@ -36,7 +36,7 @@ impl WebSearchTool {
         }
     }
 
-    /// Performs a web search using DuckDuckGo HTML search API
+    /// Performs a web search using Bing HTML search results.
     pub async fn search(&self, query: &str) -> Result<Vec<WebSearchResult>> {
         log::debug!("searching for {}", query);
         // Acquire semaphore permit to limit concurrent requests
@@ -60,13 +60,12 @@ impl WebSearchTool {
             *last_time = std::time::Instant::now();
         }
 
-        // Use DuckDuckGo HTML search API
+        // Use Bing HTML search results because DuckDuckGo is often unreliable
+        // from mainland China.
         let response = self
             .client
-            .post("https://html.duckduckgo.com/html/")
-            .header("Referer", "https://html.duckduckgo.com/")
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .form(&[("q", query), ("b", "")])
+            .get("https://www.bing.com/search")
+            .query(&[("q", query)])
             .send()
             .await
             .context("Failed to perform search")?;
@@ -97,25 +96,21 @@ impl WebSearchTool {
         Ok(results)
     }
 
-    /// Parses DuckDuckGo HTML search results
+    /// Parses Bing HTML search results.
     fn parse_search_results(html: &str) -> Result<Vec<WebSearchResult>> {
         use scraper::{Html, Selector};
 
         let document = Html::parse_document(html);
         let mut results = Vec::new();
 
-        // Select all search result containers
-        let result_selector = Selector::parse("div.result")
+        let result_selector = Selector::parse("li.b_algo")
             .map_err(|_| anyhow!("Failed to parse result selector"))?;
+        let title_selector = Selector::parse("h2 a")
+            .map_err(|_| anyhow!("Failed to parse title selector"))?;
+        let snippet_selector = Selector::parse(".b_caption p, p.b_lineclamp2, .b_snippet")
+            .map_err(|_| anyhow!("Failed to parse snippet selector"))?;
 
         for result_element in document.select(&result_selector) {
-            // Extract title and URL from the h2 > a element
-            let title_selector = Selector::parse("h2.result__title a")
-                .map_err(|_| anyhow!("Failed to parse title selector"))?;
-
-            let snippet_selector = Selector::parse("a.result__snippet")
-                .map_err(|_| anyhow!("Failed to parse snippet selector"))?;
-
             if let Some(title_elem) = result_element.select(&title_selector).next() {
                 let title = title_elem.inner_html();
                 let title_clean = Self::clean_html_text(&title);
@@ -180,6 +175,34 @@ pub fn get_web_search_tool_def() -> crate::openrouter::Tool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn parse_bing_search_results() {
+        let html = r#"
+        <html>
+            <body>
+                <li class="b_algo">
+                    <h2><a href="https://example.com/result-1">First Result</a></h2>
+                    <div class="b_caption"><p>First description text.</p></div>
+                </li>
+                <li class="b_algo">
+                    <h2><a href="https://example.com/result-2">Second Result</a></h2>
+                    <div class="b_caption"><p>Second description text.</p></div>
+                </li>
+            </body>
+        </html>
+        "#;
+
+        let results = WebSearchTool::parse_search_results(html).expect("parse should succeed");
+
+        assert_eq!(results.len(), 2);
+        assert_eq!(results[0].title, "First Result");
+        assert_eq!(results[0].url, "https://example.com/result-1");
+        assert_eq!(results[0].description, "First description text.");
+        assert_eq!(results[1].title, "Second Result");
+        assert_eq!(results[1].url, "https://example.com/result-2");
+        assert_eq!(results[1].description, "Second description text.");
+    }
 
     #[tokio::test]
     async fn test_web_search() {

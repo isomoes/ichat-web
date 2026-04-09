@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 
-// TODO: make duckduckgo(web_search) tool stateful(reuse same reqwest client
+// TODO: make web_search tool stateful(reuse same reqwest client
 // with flyweight)
 pub(crate) mod crawl;
 pub(crate) mod lua;
