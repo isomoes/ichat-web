@@ -2,9 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-The project versioning has been reset and now starts from `0.1.0`.
+`v0.1.0` is the first release published after resetting project versioning.
 
 ## [0.1.0] - 2026-04-09
+
+Initial `ichat` release.
 
 ### Changed
 

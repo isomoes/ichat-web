@@ -6,13 +6,9 @@ services:
     #   dockerfile: ./package/Dockerfile
     restart: on-failure:3
     environment:
-      - "API_KEY=sk-or-<YOUR_API_KEY>"
+      - "NEWAPI_AUTH_BASE=https://aiapi.xxxx.top/"
+      - "API_BASE=https://aiapi.xxxx.top"
     volumes:
       - "./data:/data"
     ports:
       - "3000:80"
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-    memswap_limit: 1G
