@@ -7,12 +7,14 @@
 		damping = 0.2,
 		children,
 		key = $bindable(null),
+		resetTo = 'top',
 		...props
 	} = $props<
 		HTMLAttributes<HTMLElement> & {
 			children: Component;
 			damping?: number;
 			key?: any;
+			resetTo?: 'top' | 'bottom';
 		}
 	>();
 
@@ -28,7 +30,7 @@
 		if (key !== lastKey) {
 			untrack(() => (lastKey = key));
 			scrollElement.scrollTo({
-				top: 0,
+				top: resetTo === 'bottom' ? scrollElement.scrollHeight : 0,
 				behavior: 'instant'
 			});
 		}

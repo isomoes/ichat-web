@@ -52,7 +52,9 @@
 
 <Hallucination />
 
-<Scroll class="nobar flex h-full flex-col-reverse" key={getMessages().messages.length}>
+<Scroll class="nobar flex h-full flex-col" key={getMessages().messages.length} resetTo="bottom">
+	<MessagePagination {room} />
+	<div class="min-h-16"></div>
 	<div class="sticky bottom-1 z-10 mt-4 flex justify-center">
 		<MessageInput
 			bind:content
@@ -79,6 +81,4 @@
 			disabled={stream || modelId === null || mode === null}
 		/>
 	</div>
-	<MessagePagination {room} />
-	<div class="min-h-16"></div>
 </Scroll>

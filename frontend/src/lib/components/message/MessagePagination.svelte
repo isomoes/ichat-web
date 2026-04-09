@@ -19,7 +19,7 @@
 	useSSEEffect(() => chatId);
 </script>
 
-{#each getMessages().messages as msg}
+{#each getMessages().messages.toReversed() as msg}
 	{#key msg.id}
 		{@const streaming = msg.stream}
 		{#if msg.inner.t == 'user'}
