@@ -1,5 +1,10 @@
 <script lang="ts">
 	import type { Component } from '@lucide/svelte';
+	import {
+		shouldAutoScrollToBottom,
+		shouldStickToBottomOnContentChange,
+		type ScrollResetMode
+	} from '$lib/ui/scroll';
 	import { untrack } from 'svelte';
 	import type { HTMLAttributes } from 'svelte/elements';
 
@@ -14,26 +19,62 @@
 			children: Component;
 			damping?: number;
 			key?: any;
-			resetTo?: 'top' | 'bottom';
+			resetTo?: ScrollResetMode;
 		}
 	>();
 
 	let scrollElement = $state<null | HTMLDivElement>(null);
+	let contentElement = $state<null | HTMLDivElement>(null);
 	let velocity = $state(0);
 	let animationFrameId: number | null = null;
 	let isAnimating = $derived(animationFrameId != null);
+	let isPinnedToBottom = $state(true);
 
 	let lastKey = $state(key);
+
+	function updatePinnedToBottom() {
+		if (!scrollElement) return;
+		isPinnedToBottom = shouldAutoScrollToBottom(scrollElement);
+	}
 
 	$effect(() => {
 		if (!scrollElement) return;
 		if (key !== lastKey) {
 			untrack(() => (lastKey = key));
+			if (resetTo === 'bottom' && !isPinnedToBottom) return;
 			scrollElement.scrollTo({
 				top: resetTo === 'bottom' ? scrollElement.scrollHeight : 0,
 				behavior: 'instant'
 			});
+			updatePinnedToBottom();
 		}
+	});
+
+	$effect(() => {
+		if (!scrollElement) return;
+
+		updatePinnedToBottom();
+
+		const onScroll = () => updatePinnedToBottom();
+		scrollElement.addEventListener('scroll', onScroll);
+
+		return () => scrollElement?.removeEventListener('scroll', onScroll);
+	});
+
+	$effect(() => {
+		if (!scrollElement || !contentElement || !window.ResizeObserver) return;
+
+		const observer = new ResizeObserver(() => {
+			if (!shouldStickToBottomOnContentChange(resetTo, isPinnedToBottom)) return;
+			scrollElement?.scrollTo({
+				top: scrollElement.scrollHeight,
+				behavior: 'instant'
+			});
+			updatePinnedToBottom();
+		});
+
+		observer.observe(contentElement);
+		return () => observer.disconnect();
 	});
 
 	const velocityThreshold = 3;
@@ -88,5 +129,7 @@
 	bind:this={scrollElement}
 	{onwheel}
 >
-	{@render children()}
+	<div bind:this={contentElement} class="w-full min-w-0">
+		{@render children()}
+	</div>
 </div>
