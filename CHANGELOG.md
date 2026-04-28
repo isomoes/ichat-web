@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 `v0.1.0` is the first release published after resetting project versioning.
 
+## [0.1.1] - 2026-04-28
+
+### Added
+
+- Added deployment documentation for packaged releases. (@isomoes)
+
+### Changed
+
+- Updated the Docker Compose deployment configuration. (@isomoes)
+- Switched China web search requests to Bing. (@isomoes)
+- Updated copyright ownership to isomoes. (@isomoes)
+
+### Fixed
+
+- Extracted PDF text before upload so PDF attachments are sent as text content. (@isomoes)
+
 ## [0.1.0] - 2026-04-09
 
 Initial `ichat` release.
